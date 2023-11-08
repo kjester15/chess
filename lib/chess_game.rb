@@ -3,11 +3,32 @@ require_relative 'chess_piece'
 require_relative 'chess_player'
 
 class Game
+  attr_accessor :player1, :player2, :board
+
   def initialize
+    @player1 = Player.new
+    @player2 = Player.new
+    @board = Board.new
+  end
+
+  def greeting_setup
+    puts 'Hello! Welcome to Chess. Let\'s play a game in the console.'
+    puts 'What is player 1\'s name?'
+    @player1.name = gets.chomp
+    @player1.color = 'white'
+    puts "#{player1.name} will be white."
+    puts 'What is player 2\'s name?'
+    @player2.name = gets.chomp
+    @player2.color = 'black'
+    puts "#{player2.name} will be black."
+    puts "White goes first. #{@player1.name}, your turn!"
   end
 end
 
-piece = Piece.new
+# piece = Piece.new
 board = Board.new
-puts piece.pieces[:king_w]
+# p board.translate_move('a6')
+# puts piece.pieces[:king_w]
 board.print_board
+# new_game = Game.new
+# new_game.greeting_setup
