@@ -1,32 +1,38 @@
 class Piece
-  attr_accessor :pieces
+  attr_accessor :type, :symbol, :coordinate
 
-  def initialize
-    @pieces = { king_w: '♔', queen_w: '♕', rook_w: '♖', bishop_w: '♗', knight_w: '♘', pawn_w: '♙', king_b: '♚',
-                queen_b: '♛', rook_b: '♜', bishop_b: '♝', knight_b: '♞', pawn_b: '♟︎' }
+  def initialize(type, color, coordinate)
+    @pieces = { king_white: '♔', queen_white: '♕', rook_white: '♖', bishop_white: '♗', knight_white: '♘',
+                pawn_white: '♙', king_black: '♚', queen_black: '♛', rook_black: '♜', bishop_black: '♝',
+                knight_black: '♞', pawn_black: '♟︎' }
+    @type = type
+    @color = color
+    @symbol = @pieces[:"#{type}_#{color}"]
+    @coordinate = coordinate
+    @possible_moves = []
   end
 
-  def king_moves
-    # 
+  def king_moves(current_position)
+    # add all moves to @possible_moves
   end
 
-  def queen_moves
-    # 
+  def queen_moves(current_position)
+    # add all moves to @possible_moves
   end
 
-  def rook_moves
-    # 
+  def rook_moves(current_position)
+    # add all moves to @possible_moves
   end
 
-  def bishop_moves
-    # 
+  def bishop_moves(current_position)
+    # add all moves to @possible_moves
   end
 
-  def knight_moves
-    # 
+  def knight_moves(current_position)
+    # add all moves to @possible_moves
   end
 
-  def pawn_moves
-    # 
+  def pawn_moves(current_position)
+    # add all moves to @possible_moves
   end
 end

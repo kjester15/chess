@@ -25,10 +25,8 @@ class Game
   end
 end
 
-# piece = Piece.new
 board = Board.new
-# p board.translate_move('a6')
-# puts piece.pieces[:king_w]
+board.populate_board
 board.print_board
-# new_game = Game.new
-# new_game.greeting_setup
+# x = board.board_array[0]
+# puts x.symbol
