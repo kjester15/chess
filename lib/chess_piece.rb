@@ -1,5 +1,5 @@
 class Piece
-  attr_accessor :type, :symbol, :coordinate, :possible_moves
+  attr_accessor :type, :color, :symbol, :coordinate, :possible_moves
 
   def initialize(type, color, coordinate)
     @pieces = { king_white: '♔', queen_white: '♕', rook_white: '♖', bishop_white: '♗', knight_white: '♘',

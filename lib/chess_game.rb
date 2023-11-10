@@ -34,5 +34,6 @@ end
 board = Board.new
 board.populate_board
 board.print_board
-# x = board.board_array[0]
-# puts x.symbol
+piece = Piece.new('king', 'black', [0, 0])
+piece.king_moves(piece.coordinate)
+

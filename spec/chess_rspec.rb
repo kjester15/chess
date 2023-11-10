@@ -15,29 +15,57 @@ describe Board do
   end
 
   describe '#create_piece' do
-    it 'returns a Piece object' do
+    it 'creates a Piece object' do
       row = 0
       column = 0
-      result = board_main.create_piece(row, column)
+      type = 'king'
+      color = 'black'
+      result = board_main.create_piece(row, column, type, color)
       expect(result).to be_a Piece
     end
 
-    it 'returns a rook' do
+    it 'creates a rook' do
       row = 0
       column = 0
-      result = board_main.create_piece(row, column).type
+      type = 'rook'
+      color = 'black'
+      result = board_main.create_piece(row, column, type, color).type
       expect(result).to eq('rook')
     end
 
-    it 'returns the coordinate [0, 0]' do
+    it 'creates a piece at the coordinate [0, 0]' do
       row = 0
       column = 0
-      result = board_main.create_piece(row, column).coordinate
+      type = 'king'
+      color = 'black'
+      result = board_main.create_piece(row, column, type, color).coordinate
       expect(result).to eq([0, 0])
+    end
+
+    it 'creates a white piece' do
+      row = 0
+      column = 0
+      type = 'king'
+      color = 'white'
+      result = board_main.create_piece(row, column, type, color).color
+      expect(result).to eq('white')
+    end
+  end
+
+  describe '#determine_piece' do
+    it 'creates a Piece object' do
+      row = 0
+      column = 0
+      result = board_main.determine_piece(row, column)
+      expect(result).to be_a Piece
     end
   end
 
   describe '#print_board' do
+    # method only prints to terminal - no test necessary
+  end
+
+  describe '#print_tile' do
     # method only prints to terminal - no test necessary
   end
 
