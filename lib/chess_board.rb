@@ -20,20 +20,20 @@ class Board
       color = row.zero? ? 'white' : 'black'
       case column
       when 0, 7
-        @board_array[row][column] = Piece.new('rook', color, [row, column])
+        board_array[row][column] = Piece.new('rook', color, [row, column])
       when 1, 6
-        @board_array[row][column] = Piece.new('knight', color, [row, column])
+        board_array[row][column] = Piece.new('knight', color, [row, column])
       when 2, 5
-        @board_array[row][column] = Piece.new('bishop', color, [row, column])
+        board_array[row][column] = Piece.new('bishop', color, [row, column])
       when 3
-        @board_array[row][column] = Piece.new('queen', color, [row, column])
+        board_array[row][column] = Piece.new('queen', color, [row, column])
       when 4
-        @board_array[row][column] = Piece.new('king', color, [row, column])
+        board_array[row][column] = Piece.new('king', color, [row, column])
       end
     elsif row == 1
-      @board_array[row][column] = Piece.new('pawn', 'white', [row, column])
+      board_array[row][column] = Piece.new('pawn', 'white', [row, column])
     elsif row == 6
-      @board_array[row][column] = Piece.new('pawn', 'black', [row, column])
+      board_array[row][column] = Piece.new('pawn', 'black', [row, column])
     end
   end
 
@@ -42,10 +42,10 @@ class Board
       puts '   - - - - - - - - - - - - - - - -'
       print "#{8 - row} | "
       8.times do |column|
-        if @board_array[row][column] == ' '
-          print "#{@board_array[row][column]} | "
+        if board_array[row][column] == ' '
+          print "#{board_array[row][column]} | "
         else
-          print "#{@board_array[row][column].symbol} | "
+          print "#{board_array[row][column].symbol} | "
         end
       end
       puts
@@ -61,4 +61,7 @@ class Board
     column = col_array.index(selection[0])
     [row, column]
   end
+
+  # def move_piece(start_coordinate, end_coordinate)
+  # end
 end

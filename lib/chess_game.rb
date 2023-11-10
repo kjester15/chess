@@ -23,6 +23,12 @@ class Game
     puts "#{player2.name} will be black."
     puts "White goes first. #{@player1.name}, your turn!"
   end
+
+  # def player_turn
+  # end
+
+  # def save_game
+  # end
 end
 
 board = Board.new
