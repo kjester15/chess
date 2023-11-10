@@ -46,16 +46,20 @@ class Board
       puts '   - - - - - - - - - - - - - - - -'
       print "#{8 - row} | "
       8.times do |column|
-        if board_array[row][column] == ' '
-          print "#{board_array[row][column]} | "
-        else
-          print "#{board_array[row][column].symbol} | "
-        end
+        print_tile(row, column)
       end
       puts
     end
     puts '   - - - - - - - - - - - - - - - -'
     puts '    a   b   c   d   e   f   g   h'
+  end
+
+  def print_tile(row, column)
+    if board_array[row][column] == ' '
+      print "#{board_array[row][column]} | "
+    else
+      print "#{board_array[row][column].symbol} | "
+    end
   end
 
   def translate_move(selection)
