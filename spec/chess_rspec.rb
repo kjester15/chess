@@ -1,7 +1,7 @@
 require_relative '../lib/chess_board'
-# require_relative '../lib/chess_piece'
-# require_relative '../lib/chess_player'
-# require_relative '../lib/chess_game'
+require_relative '../lib/chess_piece'
+require_relative '../lib/chess_player'
+require_relative '../lib/chess_game'
 
 describe Board do
   subject(:board_main) { described_class.new }
@@ -75,5 +75,55 @@ describe Board do
       result = board_main.translate_move(selection)
       expect(result).to eq([3, 1])
     end
+  end
+end
+
+describe Piece do
+  subject(:piece_main) { described_class.new('king', 'black', [0, 4]) }
+
+  describe '#initialize' do
+    # Initialize -> No test necessary when only creating instance variables.
+  end
+
+  describe '#in_bounds?' do
+    it 'returns true if coordinate is within the game board' do
+      coordinate = [1, 1]
+      expect(piece_main.in_bounds?(coordinate)).to be true
+    end
+
+    it 'returns nil if coordinate is outside the game board' do
+      coordinate = [-1, 1]
+      expect(piece_main.in_bounds?(coordinate)).to be nil
+    end
+  end
+
+  describe '#king_moves' do
+    it 'adds all possible moves when all are in bounds' do
+      coordinate = [3, 3]
+      moves = [[4, 3], [4, 4], [3, 4], [2, 4], [2, 3], [2, 2], [3, 2], [4, 2]]
+      piece_main.king_moves(coordinate)
+      result = piece_main.instance_variable_get(:@possible_moves)
+      expect(result).to eq(moves)
+    end
+
+    it 'only adds in bounds moves' do
+      coordinate = [0, 0]
+      moves = [[1, 0], [1, 1], [0, 1]]
+      piece_main.king_moves(coordinate)
+      result = piece_main.instance_variable_get(:@possible_moves)
+      expect(result).to eq(moves)
+    end
+  end
+end
+
+describe Game do
+  subject(:game_main) { described_class.new }
+
+  describe '#initialize' do
+    # Initialize -> No test necessary when only creating instance variables.
+  end
+
+  describe '#greeting_setup' do
+    # method only prints to terminal and updates instance variables - no test necessary
   end
 end

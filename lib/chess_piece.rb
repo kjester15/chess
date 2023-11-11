@@ -21,14 +21,14 @@ class Piece
   end
 
   def king_moves(current_position)
-    possible_moves = []
+    @possible_moves = []
     row = current_position[0]
     column = current_position[1]
     moves = [[row + 1, column], [row + 1, column + 1], [row, column + 1], [row - 1, column + 1],
              [row - 1, column], [row - 1, column - 1], [row, column - 1], [row + 1, column - 1]]
     moves.each do |coordinate|
       if in_bounds?(coordinate)
-        possible_moves << coordinate
+        @possible_moves << coordinate
       end
     end
   end

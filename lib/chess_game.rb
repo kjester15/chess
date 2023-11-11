@@ -34,6 +34,6 @@ end
 board = Board.new
 board.populate_board
 board.print_board
-piece = Piece.new('king', 'black', [0, 0])
+piece = Piece.new('king', 'black', [3, 3])
 piece.king_moves(piece.coordinate)
-
+print piece.possible_moves
