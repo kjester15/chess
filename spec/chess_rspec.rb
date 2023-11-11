@@ -130,4 +130,102 @@ describe Game do
   describe '#player_input' do
     # method only prints to terminal and gets player input - no test necessary
   end
+
+  describe '#create_two_dig_array' do
+    # method only interates and creates an array - no test necessary
+  end
+
+  describe '#create_three_dig_array' do
+    # method only interates and creates an array - no test necessary
+  end
+
+  describe '#create_four_dig_array' do
+    # method only interates and creates an array - no test necessary
+  end
+
+  describe '#create_five_dig_array' do
+    # method only interates and creates an array - no test necessary
+  end
+
+  describe '#validate_input' do
+    context 'when given a valid input' do
+      it 'returns true when given "g5"' do
+        input = 'g5'
+        result = game_main.validate_input(input)
+        expect(result).to be true
+      end
+
+      it 'returns true when given "Kg5"' do
+        input = 'Kg5'
+        result = game_main.validate_input(input)
+        expect(result).to be true
+      end
+
+      it 'returns true when given "Kdg5"' do
+        input = 'Kdg5'
+        result = game_main.validate_input(input)
+        expect(result).to be true
+      end
+
+      it 'returns true when given "K2g5"' do
+        input = 'K2g5'
+        result = game_main.validate_input(input)
+        expect(result).to be true
+      end
+
+      it 'returns true when given "Kd2g5"' do
+        input = 'Kd2g5'
+        result = game_main.validate_input(input)
+        expect(result).to be true
+      end
+
+      it 'returns true when given "eg5"' do
+        input = 'eg5'
+        result = game_main.validate_input(input)
+        expect(result).to be true
+      end
+
+      it 'returns true when given "2g5"' do
+        input = '2g5'
+        result = game_main.validate_input(input)
+        expect(result).to be true
+      end
+    end
+
+    context 'when given an invalid input' do
+      before do
+        expect(game_main).to receive(:puts)
+      end
+
+      it 'returns false when given single letter "g"' do
+        input = 'g'
+        result = game_main.validate_input(input)
+        expect(result).to be nil
+      end
+
+      it 'returns false when given single number "5"' do
+        input = '5'
+        result = game_main.validate_input(input)
+        expect(result).to be nil
+      end
+
+      it 'returns false when given out of order "5g"' do
+        input = '5g'
+        result = game_main.validate_input(input)
+        expect(result).to be nil
+      end
+
+      it 'returns false when given out of order "aK5"' do
+        input = 'aK5'
+        result = game_main.validate_input(input)
+        expect(result).to be nil
+      end
+
+      it 'returns false when given 6 letter "Kad2g5"' do
+        input = 'Kad2g5'
+        result = game_main.validate_input(input)
+        expect(result).to be nil
+      end
+    end
+  end
 end
