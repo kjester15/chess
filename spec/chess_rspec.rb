@@ -126,4 +126,8 @@ describe Game do
   describe '#greeting_setup' do
     # method only prints to terminal and updates instance variables - no test necessary
   end
+
+  describe '#player_input' do
+    # method only prints to terminal and gets player input - no test necessary
+  end
 end

@@ -24,9 +24,15 @@ class Game
     puts "White goes first. #{@player1.name}, your turn!"
   end
 
+  def player_input
+    puts 'Please enter a move'
+    gets.chomp
+  end
+
   def player_turn
     # Retrieve player move (CREATE NEW METHOD)
     #   enter a move to make - piece letter followed by move location
+    move = player_input
     # Validate move (CREATE NEW METHOD)
     #   take the entered text and separate the first letter and move location
     #     validate that the first letter is correct (K/Q/R/B/N/pawn is '')
@@ -50,6 +56,7 @@ class Game
     board = Board.new
     board.populate_board
     board.print_board
+    player_turn
     # piece = Piece.new('king', 'black', [3, 3])
     # piece.king_moves(piece.coordinate)
   end
