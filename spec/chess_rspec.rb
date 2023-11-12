@@ -68,14 +68,6 @@ describe Board do
   describe '#print_tile' do
     # method only prints to terminal - no test necessary
   end
-
-  describe '#translate_move' do
-    it 'returns [3, 1]' do
-      selection = 'b5'
-      result = board_main.translate_move(selection)
-      expect(result).to eq([3, 1])
-    end
-  end
 end
 
 describe Piece do
@@ -226,6 +218,14 @@ describe Game do
         result = game_main.validate_input(input)
         expect(result).to be nil
       end
+    end
+  end
+
+  describe '#translate_move' do
+    it 'returns [3, 1]' do
+      selection = 'b5'
+      result = game_main.translate_move(selection)
+      expect(result).to eq([3, 1])
     end
   end
 end

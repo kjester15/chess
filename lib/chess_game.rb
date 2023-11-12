@@ -135,10 +135,23 @@ class Game
     end
   end
 
+  def find_piece(move)
+    file_rank = move[-2..]
+    translate_move(file_rank)
+  end
+
+  def translate_move(selection)
+    row_array = %w[8 7 6 5 4 3 2 1]
+    col_array = %w[a b c d e f g h]
+    row = row_array.index(selection[1])
+    column = col_array.index(selection[0])
+    [row, column]
+  end
+
   def player_turn
     # Retrieve player move
     move = player_input
-    # Validate move
+    # Validate input
     validated = validate_input(move)
     until validated
       move = player_input
@@ -146,7 +159,9 @@ class Game
     end
     # Determine potential spaces piece could move from (CREATE NEW METHOD)
     #   run a possible move method on the move location based on the noted letter and add to array
-    possible_tiles = []
+    #   translate_move in board class to translate file/rank to coordinate
+    #   determine which method to run based on first letter - if no letter, use pawn
+    p find_piece(move)
     # Check for piece (CREATE NEW METHOD)
     #   check if the noted piece is in any of the move locations in the previously created array
     # Move (and replace) piece (CREATE NEW METHOD)
