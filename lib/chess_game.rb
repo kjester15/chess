@@ -135,10 +135,29 @@ class Game
     end
   end
 
-  def find_piece(move)
+  def find_piece_locations(move)
+    piece = move[0]
     file_rank = move[-2..]
-    translate_move(file_rank)
+    coordinate = translate_move(file_rank)
+    case piece
+    when 'K'
+      # king method(coordinate)
+    when 'Q'
+      # queen method(coordinate)
+    when 'R'
+      # rook method(coordinate)
+    when 'B'
+      # bishop method(coordinate)
+    when 'N'
+      # knight method(coordinate)
+    else
+      # pawn
+    end
+    # feed result of translate_move into identified piece move method to get list of possible spaces to check for piece
   end
+
+  # def find_piece(moves_array)
+  # end
 
   def translate_move(selection)
     row_array = %w[8 7 6 5 4 3 2 1]
@@ -146,6 +165,14 @@ class Game
     row = row_array.index(selection[1])
     column = col_array.index(selection[0])
     [row, column]
+  end
+
+  def in_bounds?(position)
+    if position[0].between?(0, 7)
+      if position[1].between?(0, 7)
+        true
+      end
+    end
   end
 
   def player_turn
