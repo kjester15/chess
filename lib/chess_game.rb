@@ -1,15 +1,14 @@
 require_relative 'chess_board'
 require_relative 'chess_piece'
-require_relative 'chess_player'
 
 class Game
-  attr_accessor :player1, :player2, :board, :player_turn
+  attr_accessor :player1, :player2, :board, :current_player
 
   def initialize
     @player1 = { name: '', color: 'white' }
     @player2 = { name: '', color: 'black' }
     @board = Board.new
-    @player_turn = @player1
+    @current_player = @player1
   end
 
   def greeting_setup
@@ -134,11 +133,11 @@ class Game
     end
   end
 
-  def update_player_turn
-    if @player_turn == @player1
-      @player_turn = @player2
-    elsif @player_turn == @player2
-      @player_turn = @player1
+  def update_current_player
+    if @current_player == @player1
+      @current_player = @player2
+    elsif @current_player == @player2
+      @current_player = @player1
     end
   end
 
@@ -194,17 +193,22 @@ class Game
     #       if multiples pieces are found, reprompt user input with file, rank, or rank and file, until only one option remains
     #   if a piece is captured, replace it with the players piece (add an x to the player's entered move before the location (Kxg5))
     # Add move to log (CREATE NEW METHOD) - the player's move text to an array of moves that have been made
-    update_player_turn
+    update_current_player
   end
 
   def pawn_moves(current_position)
-    # color = current player color
-    # move_directions (black) = [ [1, 0],
-    #                            if caputuring: [1, 1], [1, -1]
-    #                            if first move: [2, 0] ]
-    # move_directions (white) = [ [-1, 0],
-    #                            if caputuring: [-1, 1], [-1, -1]
-    #                            if first move: [-2, 0] ]
+    color = @player_turn[:color]
+    if color == 'black'
+    # move_directions = [ [1, 0],
+    #      if caputuring: [1, 1], [1, -1]
+    #      if first move: [2, 0] ]
+      puts 'pawn black'
+    elsif color == 'white'
+    # move_directions = [ [-1, 0],
+    #      if caputuring: [-1, 1], [-1, -1]
+    #      if first move: [-2, 0] ]
+      puts 'pawn white'
+    end
   end
 
   def piece_moves(piece, position)
@@ -235,6 +239,7 @@ class Game
     @board.populate_board
     @board.print_board
     player_turn
+    puts current_player[:name]
   end
 
   # def save_game

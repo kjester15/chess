@@ -1,6 +1,5 @@
 require_relative '../lib/chess_board'
 require_relative '../lib/chess_piece'
-require_relative '../lib/chess_player'
 require_relative '../lib/chess_game'
 
 describe Board do
