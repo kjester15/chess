@@ -141,15 +141,36 @@ class Game
     end
   end
 
-  def find_piece_locations(move)
-    piece = move[0]
-    file_rank = move[-2..]
-    coordinate = translate_move(file_rank)
-    if %w[K Q R B N].include?(piece)
-      piece_moves(piece, coordinate)
+  def convert_symbol_to_piece(symbol)
+    case symbol
+    when 'K'
+      piece = 'king'
+    when 'Q'
+      piece = 'queen'
+    when 'R'
+      piece = 'rook'
+    when 'B'
+      piece = 'bishop'
+    when 'N'
+      piece = 'knight'
     else
-      pawn_moves(coordinate)
+      'pawn'
     end
+    piece
+  end
+
+  def find_piece_locations(move)
+    piece = convert_symbol_to_piece(move[0])
+    file_rank = move[-2..]
+    move_array = []
+    8.times do |row|
+      8.times do |column|
+        unless @board.board_array[row][column].instance_of?(String)
+          @board.board_array[row][column].type == piece ? move_array << [row, column] : next
+        end
+      end
+    end
+    move_array
   end
 
   # def find_piece(moves_array)
@@ -171,10 +192,6 @@ class Game
     end
   end
 
-  def tile_occupied?(coordinate)
-    # if tile is occupied, return true
-  end
-
   def can_capture?
     # if piece is opposite color, return true
   end
@@ -186,7 +203,7 @@ class Game
       move = player_input
       validated = validate_input(move)
     end
-    p find_piece_locations(move)
+    find_piece_locations(move)
     # Check for piece (CREATE NEW METHOD) - check if the noted piece is in any of the move locations in the previously created array
     # Move (and replace) piece (CREATE NEW METHOD)
     #   if the piece is found, move the piece to the new location (if the piece is not found, reprompt the entire process)

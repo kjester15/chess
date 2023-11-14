@@ -61,4 +61,8 @@ class Board
       print "#{board_array[row][column].symbol} | "
     end
   end
+
+  def tile_occupied?(coordinate)
+    # if tile is occupied, return true
+  end
 end
