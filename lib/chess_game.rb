@@ -6,22 +6,20 @@ class Game
   attr_accessor :player1, :player2, :board
 
   def initialize
-    @player1 = Player.new
-    @player2 = Player.new
+    @player1 = { name: '', color: 'white' }
+    @player2 = { name: '', color: 'black' }
     @board = Board.new
   end
 
   def greeting_setup
     puts 'Hello! Welcome to Chess. Let\'s play a game in the console.'
     puts 'What is player 1\'s name?'
-    @player1.name = gets.chomp
-    @player1.color = 'white'
-    puts "#{player1.name} will be white."
+    @player1[:name] = gets.chomp
+    puts "#{player1[:name]} will be white."
     puts 'What is player 2\'s name?'
-    @player2.name = gets.chomp
-    @player2.color = 'black'
-    puts "#{player2.name} will be black."
-    puts "White goes first. #{@player1.name}, your turn!"
+    @player2[:name] = gets.chomp
+    puts "#{player2[:name]} will be black."
+    puts "White goes first. #{@player1[:name]}, your turn!"
   end
 
   def player_input
@@ -139,21 +137,11 @@ class Game
     piece = move[0]
     file_rank = move[-2..]
     coordinate = translate_move(file_rank)
-    case piece
-    when 'K'
-      # king method(coordinate)
-    when 'Q'
-      # queen method(coordinate)
-    when 'R'
-      # rook method(coordinate)
-    when 'B'
-      # bishop method(coordinate)
-    when 'N'
-      # knight method(coordinate)
+    if %w[K Q R B N].include?(piece)
+      piece_moves(piece, coordinate)
     else
-      # pawn
+      pawn_moves(coordinate)
     end
-    # feed result of translate_move into identified piece move method to get list of possible spaces to check for piece
   end
 
   # def find_piece(moves_array)
@@ -175,41 +163,68 @@ class Game
     end
   end
 
+  def tile_occupied?(coordinate)
+    # if tile is occupied, return true
+  end
+
+  def can_capture?
+    # if piece is opposite color, return true
+  end
+
   def player_turn
-    # Retrieve player move
     move = player_input
-    # Validate input
     validated = validate_input(move)
     until validated
       move = player_input
       validated = validate_input(move)
     end
-    # Determine potential spaces piece could move from (CREATE NEW METHOD)
-    #   run a possible move method on the move location based on the noted letter and add to array
-    #   translate_move in board class to translate file/rank to coordinate
-    #   determine which method to run based on first letter - if no letter, use pawn
-    p find_piece(move)
-    # Check for piece (CREATE NEW METHOD)
-    #   check if the noted piece is in any of the move locations in the previously created array
+    p find_piece_locations(move)
+    # Check for piece (CREATE NEW METHOD) - check if the noted piece is in any of the move locations in the previously created array
     # Move (and replace) piece (CREATE NEW METHOD)
-    #   if the piece is found, move the piece to the new location
-    #     if the piece is not found, reprompt the entire process
-    #       if multiples pieces are found, reprompt user input with file, rank, or rank and file,
-    #       until only one option remains
-    #   if a piece is captured, replace it with the players piece
-    #     add an x to the player's entered move before the location (Kxg5)
-    # Add move to log (CREATE NEW METHOD)
-    #   the player's move text to an array of moves that have been made
+    #   if the piece is found, move the piece to the new location (if the piece is not found, reprompt the entire process)
+    #       if multiples pieces are found, reprompt user input with file, rank, or rank and file, until only one option remains
+    #   if a piece is captured, replace it with the players piece (add an x to the player's entered move before the location (Kxg5))
+    # Add move to log (CREATE NEW METHOD) - the player's move text to an array of moves that have been made
+  end
+
+  def pawn_moves(current_position)
+    # color = current player color (black/white)
+    # move_directions (black) = [ [1, 0],
+    #                            if caputuring: [1, 1], [1, -1]
+    #                            if first move: [2, 0] ]
+    # move_directions (white) = [ [-1, 0],
+    #                            if caputuring: [-1, 1], [-1, -1]
+    #                            if first move: [-2, 0] ]
+  end
+
+  def piece_moves(piece, position)
+    possible_tiles = []
+    case piece
+    when 'K'
+      move_directions = [[1, 0], [1, 1], [0, 1], [-1, 1], [-1, 0], [-1, -1], [0, -1], [1, -1]].freeze
+    when 'Q'
+      move_directions = [[x, 0], [x, x], [0, x], [-x, x], [-x, 0], [-x, -x], [0, -x], [x, -x]].freeze
+    when 'R'
+      move_directions = [[x, 0], [0, x], [-x, 0], [0, -x]].freeze
+    when 'B'
+      move_directions = [[x, x], [-x, x], [-x, -x], [x, -x]].freeze
+    when 'N'
+      move_directions = [[-2, 1], [-1, 2], [1, 2], [2, 1], [2, -1], [1, -2], [-1, -2], [-2, -1]].freeze
+    end
+    move_directions.each do |coordinate|
+      new_tile = [position[0] + coordinate[0], position[1] + coordinate[1]]
+      if in_bounds?(new_tile)
+        possible_tiles << new_tile
+      end
+    end
+    possible_tiles
   end
 
   def run_game
-    board = Board.new
-    board.populate_board
-    board.print_board
+    greeting_setup
+    @board.populate_board
+    @board.print_board
     player_turn
-    # player_turn
-    # piece = Piece.new('king', 'black', [3, 3])
-    # piece.king_moves(piece.coordinate)
   end
 
   # def save_game

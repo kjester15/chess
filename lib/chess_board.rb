@@ -61,15 +61,4 @@ class Board
       print "#{board_array[row][column].symbol} | "
     end
   end
-
-  def translate_move(selection)
-    row_array = %w[8 7 6 5 4 3 2 1]
-    col_array = %w[a b c d e f g h]
-    row = row_array.index(selection[1])
-    column = col_array.index(selection[0])
-    [row, column]
-  end
-
-  # def move_piece(start_coordinate, end_coordinate)
-  # end
 end
