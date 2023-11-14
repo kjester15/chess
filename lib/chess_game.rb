@@ -3,12 +3,13 @@ require_relative 'chess_piece'
 require_relative 'chess_player'
 
 class Game
-  attr_accessor :player1, :player2, :board
+  attr_accessor :player1, :player2, :board, :player_turn
 
   def initialize
     @player1 = { name: '', color: 'white' }
     @player2 = { name: '', color: 'black' }
     @board = Board.new
+    @player_turn = @player1
   end
 
   def greeting_setup
@@ -133,6 +134,14 @@ class Game
     end
   end
 
+  def update_player_turn
+    if @player_turn == @player1
+      @player_turn = @player2
+    elsif @player_turn == @player2
+      @player_turn = @player1
+    end
+  end
+
   def find_piece_locations(move)
     piece = move[0]
     file_rank = move[-2..]
@@ -185,10 +194,11 @@ class Game
     #       if multiples pieces are found, reprompt user input with file, rank, or rank and file, until only one option remains
     #   if a piece is captured, replace it with the players piece (add an x to the player's entered move before the location (Kxg5))
     # Add move to log (CREATE NEW METHOD) - the player's move text to an array of moves that have been made
+    update_player_turn
   end
 
   def pawn_moves(current_position)
-    # color = current player color (black/white)
+    # color = current player color
     # move_directions (black) = [ [1, 0],
     #                            if caputuring: [1, 1], [1, -1]
     #                            if first move: [2, 0] ]
