@@ -161,12 +161,13 @@ class Game
 
   def find_piece_locations(move)
     piece = convert_symbol_to_piece(move[0])
-    file_rank = move[-2..]
+    color = @current_player[:color]
     move_array = []
     8.times do |row|
       8.times do |column|
         unless @board.board_array[row][column].instance_of?(String)
-          @board.board_array[row][column].type == piece ? move_array << [row, column] : next
+          tile = @board.board_array[row][column]
+          tile.type == piece && tile.color == color ? move_array << [row, column] : next
         end
       end
     end
@@ -174,6 +175,8 @@ class Game
   end
 
   # def find_piece(moves_array)
+  # file_rank = move[-2..]
+    # use the array with possible pieces and see which of them can get to the specified tile
   # end
 
   def translate_move(selection)
@@ -256,7 +259,6 @@ class Game
     @board.populate_board
     @board.print_board
     player_turn
-    puts current_player[:name]
   end
 
   # def save_game
