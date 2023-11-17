@@ -2,13 +2,16 @@ require_relative 'chess_board'
 require_relative 'chess_piece'
 
 class Game
-  attr_accessor :player1, :player2, :board, :current_player
+  attr_accessor :player1, :player2, :board, :current_player, :move_log, :game_over, :move_complete
 
   def initialize
     @player1 = { name: '', color: 'white' }
     @player2 = { name: '', color: 'black' }
     @board = Board.new
     @current_player = @player1
+    @move_log = []
+    @game_over = false
+    @move_complete = false
   end
 
   def greeting_setup
@@ -134,11 +137,7 @@ class Game
   end
 
   def update_current_player
-    if @current_player == @player1
-      @current_player = @player2
-    elsif @current_player == @player2
-      @current_player = @player1
-    end
+    @current_player = @current_player == @player1 ? @player2 : @player1
   end
 
   def convert_symbol_to_piece(symbol)
@@ -154,7 +153,7 @@ class Game
     when 'N'
       piece = 'knight'
     else
-      'pawn'
+      piece = 'pawn'
     end
     piece
   end
@@ -162,22 +161,60 @@ class Game
   def find_piece_locations(move)
     piece = convert_symbol_to_piece(move[0])
     color = @current_player[:color]
-    move_array = []
+    possible_pieces = []
     8.times do |row|
       8.times do |column|
-        unless @board.board_array[row][column].instance_of?(String)
-          tile = @board.board_array[row][column]
-          tile.type == piece && tile.color == color ? move_array << [row, column] : next
+        unless board.board_array[row][column].instance_of?(String)
+          tile = board.board_array[row][column]
+          tile.type == piece && tile.color == color ? possible_pieces << [row, column] : next
         end
       end
     end
-    move_array
+    possible_pieces
   end
 
-  # def find_piece(moves_array)
-  # file_rank = move[-2..]
-    # use the array with possible pieces and see which of them can get to the specified tile
-  # end
+  def add_moves(moves, tile, piece, coordinate)
+    return unless moves.include?(tile)
+
+    coordinate unless %w[Q R B].include?(piece)
+    if not_obscured?(coordinate, tile) then coordinate end
+  end
+
+  def narrow_pieces(final_pieces)
+    # TODO: check if user input any rank or file specifications and use to narrow down pieces
+  end
+
+  def find_piece(pieces_array, move)
+    piece = move[0]
+    final_pieces = []
+    tile = translate_move(move[-2..])
+    moves = []
+    color = @current_player[:color]
+    pieces_array.each do |coordinate|
+      if %w[K Q R B N].include?(piece)
+        moves = board.board_array[coordinate[0]][coordinate[1]].piece_moves(piece, coordinate)
+      else
+        moves = board.board_array[coordinate[0]][coordinate[1]].pawn_moves(coordinate, color)
+      end
+      added_move = add_moves(moves, tile, piece, coordinate)
+      final_pieces << added_move unless added_move.nil?
+    end
+    # TODO: if final_pieces.length > 1
+    #   # final_pieces = new method to narrow final_pieces based on rest of input
+    #   final_piece = narrow_pieces(final_pieces)
+    # end
+    final_pieces # this is returning an array but the step above will narrow it down to one piece (tile)
+  end
+
+  def move_piece(piece, move)
+    piece = piece[0] # remove this once #find_piece returns one piece and not an array
+    move_to = translate_move(move[-2..])
+    if board.tile_occupied?(move_to)
+      return unless can_capture?(move_to)
+    end
+    board.board_array[move_to[0]][move_to[1]] = board.board_array[piece[0]][piece[1]]
+    board.board_array[piece[0]][piece[1]] = ' '
+  end
 
   def translate_move(selection)
     row_array = %w[8 7 6 5 4 3 2 1]
@@ -187,78 +224,75 @@ class Game
     [row, column]
   end
 
-  def in_bounds?(position)
-    if position[0].between?(0, 7)
-      if position[1].between?(0, 7)
-        true
-      end
-    end
+  def can_capture?(tile)
+    board.board_array[tile[0]][tile[1]].color != @current_player[:color]
   end
 
-  def can_capture?
-    # if piece is opposite color, return true
+  def not_obscured?(start_tile, end_tile)
+    if start_tile[0] == end_tile[0]
+      x_adjust = (start_tile[0] - end_tile[0]).positive? ? -1 : 1
+      length = (end_tile[1] - start_tile[1]).abs - 1
+      length.times do |x|
+        adjust = (x + 1) * x_adjust
+        if board.board_array[start_tile[0]][start_tile[1] + adjust].instance_of?(Piece)
+          return
+        end
+      end
+    elsif start_tile[1] == end_tile[1]
+      y_adjust = (start_tile[0] - end_tile[0]).positive? ? -1 : 1
+      length = (end_tile[0] - start_tile[0]).abs - 1
+      length.times do |y|
+        adjust = (y + 1) * y_adjust
+        if board.board_array[start_tile[0] + adjust][start_tile[1]].instance_of?(Piece)
+          return
+        end
+      end
+    else
+      z_adjust = [(start_tile[0] - end_tile[0]).positive? ? -1 : 1, (start_tile[1] - end_tile[1]).positive? ? -1 : 1]
+      length = (end_tile[0] - start_tile[0]).abs - 1
+      length.times do |z|
+        row_adjust = (z + 1) * z_adjust[0]
+        col_adjust = (z + 1) * z_adjust[1]
+        if board.board_array[start_tile[0] + row_adjust][start_tile[1] + col_adjust].instance_of?(Piece)
+          return
+        end
+      end
+    end
+    true
   end
 
   def player_turn
-    move = player_input
-    validated = validate_input(move)
-    until validated
+    until move_complete
       move = player_input
       validated = validate_input(move)
-    end
-    find_piece_locations(move)
-    # Check for piece (CREATE NEW METHOD) - check if the noted piece is in any of the move locations in the previously created array
-    # Move (and replace) piece (CREATE NEW METHOD)
-    #   if the piece is found, move the piece to the new location (if the piece is not found, reprompt the entire process)
-    #       if multiples pieces are found, reprompt user input with file, rank, or rank and file, until only one option remains
-    #   if a piece is captured, replace it with the players piece (add an x to the player's entered move before the location (Kxg5))
-    # Add move to log (CREATE NEW METHOD) - the player's move text to an array of moves that have been made
-    update_current_player
-  end
-
-  def pawn_moves(current_position)
-    color = @player_turn[:color]
-    if color == 'black'
-    # move_directions = [ [1, 0],
-    #      if caputuring: [1, 1], [1, -1]
-    #      if first move: [2, 0] ]
-      puts 'pawn black'
-    elsif color == 'white'
-    # move_directions = [ [-1, 0],
-    #      if caputuring: [-1, 1], [-1, -1]
-    #      if first move: [-2, 0] ]
-      puts 'pawn white'
-    end
-  end
-
-  def piece_moves(piece, position)
-    possible_tiles = []
-    case piece
-    when 'K'
-      move_directions = [[1, 0], [1, 1], [0, 1], [-1, 1], [-1, 0], [-1, -1], [0, -1], [1, -1]].freeze
-    when 'Q'
-      move_directions = [[x, 0], [x, x], [0, x], [-x, x], [-x, 0], [-x, -x], [0, -x], [x, -x]].freeze
-    when 'R'
-      move_directions = [[x, 0], [0, x], [-x, 0], [0, -x]].freeze
-    when 'B'
-      move_directions = [[x, x], [-x, x], [-x, -x], [x, -x]].freeze
-    when 'N'
-      move_directions = [[-2, 1], [-1, 2], [1, 2], [2, 1], [2, -1], [1, -2], [-1, -2], [-2, -1]].freeze
-    end
-    move_directions.each do |coordinate|
-      new_tile = [position[0] + coordinate[0], position[1] + coordinate[1]]
-      if in_bounds?(new_tile)
-        possible_tiles << new_tile
+      until validated
+        move = player_input
+        validated = validate_input(move)
+      end
+      possible_pieces = find_piece_locations(move)
+      piece = find_piece(possible_pieces, move)
+      if piece.length == 0
+        puts 'No piece identified - make another selection'
+      else
+        move_piece(piece, move)
+        @move_complete = true
       end
     end
-    possible_tiles
+    @move_complete = false
+    # TODO: if multiples pieces are found, reprompt user input with file, rank, or rank and file, until only one option remains
+    move_log << move # TODO: if a piece was captured add an x to the player's entered move before the location (Kxg5))
+    update_current_player
   end
 
   def run_game
     greeting_setup
-    @board.populate_board
-    @board.print_board
-    player_turn
+    board.populate_board
+    board.print_board
+    until game_over
+      puts "#{current_player[:name]}, your turn."
+      player_turn
+      board.print_board
+    end
   end
 
   # def save_game

@@ -21,7 +21,7 @@ class Board
 
   def determine_piece(row, column)
     if [0, 7].include?(row)
-      color = row.zero? ? 'white' : 'black'
+      color = row.zero? ? 'black' : 'white'
       case column
       when 0, 7
         type = 'rook'
@@ -35,7 +35,7 @@ class Board
         type = 'king'
       end
     else
-      color = row == 1 ? 'white' : 'black'
+      color = row == 1 ? 'black' : 'white'
       type = 'pawn'
     end
     create_piece(row, column, type, color)
@@ -63,6 +63,8 @@ class Board
   end
 
   def tile_occupied?(coordinate)
-    # if tile is occupied, return true
+    row = coordinate[0]
+    column = coordinate[1]
+    !@board_array[row][column] == ' '
   end
 end
