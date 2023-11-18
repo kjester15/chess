@@ -219,8 +219,8 @@ class Game
     piece = piece[0] # remove this once #find_piece returns one piece and not an array
     move_to = translate_move(move[-2..])
     if board.tile_occupied?(move_to)
-      unless can_capture?(move_to, move)
-        puts 'Your own piece is already on that tile.'
+      unless can_capture?(piece, move)
+        puts 'You cannot capture this piece.'
         return
       end
     end
@@ -243,12 +243,13 @@ class Game
     true
   end
 
-  def can_capture?(tile, move)
-    piece = move[0]
+  def can_capture?(start_tile, end_tile)
+    move_to = translate_move(end_tile[-2..])
+    piece = end_tile[0]
     if %w[K Q R B N].include?(piece)
-      board.board_array[tile[0]][tile[1]].color != @current_player[:color]
-    elsif diagonal_from_pawn?(tile, translate_move(move[-2..]))
-      board.board_array[tile[0]][tile[1]].color != @current_player[:color]
+      board.board_array[move_to[0]][move_to[1]].color != @current_player[:color]
+    elsif diagonal_from_pawn?(start_tile, move_to)
+      board.board_array[move_to[0]][move_to[1]].color != @current_player[:color]
     end
   end
 

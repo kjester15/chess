@@ -17,7 +17,7 @@ class Piece
     if color == 'white'
       move_adjust *= -1
     end
-    move_directions = [[1 * move_adjust, 0]]
+    move_directions = [[1 * move_adjust, 0], [1 * move_adjust, 1], [1 * move_adjust, -1]]
     # TODO: implement diagonal capture moves
     # capture_directions = [[1, 1], [1, -1]]
     first_move_directions = [2 * move_adjust, 0]
