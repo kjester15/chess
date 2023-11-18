@@ -11,15 +11,19 @@ class Piece
     @coordinate = coordinate
   end
 
-  def pawn_move_directions(position, color)
+  def pawn_move_directions(position, color, capture)
     # TODO: implement en passant
     move_adjust = 1
     if color == 'white'
       move_adjust *= -1
     end
-    move_directions = [[1 * move_adjust, 0], [1 * move_adjust, 1], [1 * move_adjust, -1]]
+    move_directions = [[1 * move_adjust, 0]]
     # TODO: implement diagonal capture moves
-    # capture_directions = [[1, 1], [1, -1]]
+    unless capture
+      [[1 * move_adjust, 1], [1 * move_adjust, -1]].each do |capture_direction|
+        move_directions << capture_direction
+      end
+    end
     first_move_directions = [2 * move_adjust, 0]
     if color == 'white' && position[0] == 6
       move_directions << first_move_directions
@@ -29,9 +33,9 @@ class Piece
     move_directions
   end
 
-  def pawn_moves(position, color)
+  def pawn_moves(position, color, capture)
     possible_moves = []
-    move_directions = pawn_move_directions(position, color)
+    move_directions = pawn_move_directions(position, color, capture)
     move_directions.each do |direction|
       new_tile = [position[0] + (direction[0]), position[1] + direction[1]]
       in_bounds?(new_tile) ? possible_moves << new_tile : next
