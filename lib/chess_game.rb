@@ -117,7 +117,7 @@ class Game
   def validate_input(move)
     length = move.length
     if length < 2 || length > 5
-      puts 'Please enter a valid move'
+      puts 'That is not a valid move'
       return
     elsif length == 2
       array = create_two_dig_array
@@ -180,8 +180,16 @@ class Game
     if not_obscured?(coordinate, tile) then coordinate end
   end
 
-  def narrow_pieces(final_pieces)
+  def narrow_pieces(final_pieces, move)
     # TODO: check if user input any rank or file specifications and use to narrow down pieces
+    if move.length == 3
+      # 
+    end
+    if move.length == 4
+    end
+    if move.length == 5
+    end
+    final_pieces
   end
 
   def find_piece(pieces_array, move)
@@ -199,9 +207,10 @@ class Game
       added_move = add_moves(moves, tile, piece, coordinate)
       final_pieces << added_move unless added_move.nil?
     end
-    # TODO: if final_pieces.length > 1
+    # TODO:
+    # if final_pieces.length > 1
     #   # final_pieces = new method to narrow final_pieces based on rest of input
-    #   final_piece = narrow_pieces(final_pieces)
+    #   final_pieces = narrow_pieces(final_pieces, move)
     # end
     final_pieces # this is returning an array but the step above will narrow it down to one piece (tile)
   end
@@ -210,10 +219,14 @@ class Game
     piece = piece[0] # remove this once #find_piece returns one piece and not an array
     move_to = translate_move(move[-2..])
     if board.tile_occupied?(move_to)
-      return unless can_capture?(move_to)
+      unless can_capture?(move_to, move)
+        puts 'Your own piece is already on that tile.'
+        return
+      end
     end
     board.board_array[move_to[0]][move_to[1]] = board.board_array[piece[0]][piece[1]]
     board.board_array[piece[0]][piece[1]] = ' '
+    @move_complete = true
   end
 
   def translate_move(selection)
@@ -224,8 +237,19 @@ class Game
     [row, column]
   end
 
-  def can_capture?(tile)
-    board.board_array[tile[0]][tile[1]].color != @current_player[:color]
+  def diagonal_from_pawn?(start_tile, end_tile)
+    return unless (end_tile[1] - start_tile[1]).abs == 1
+
+    true
+  end
+
+  def can_capture?(tile, move)
+    piece = move[0]
+    if %w[K Q R B N].include?(piece)
+      board.board_array[tile[0]][tile[1]].color != @current_player[:color]
+    elsif diagonal_from_pawn?(tile, translate_move(move[-2..]))
+      board.board_array[tile[0]][tile[1]].color != @current_player[:color]
+    end
   end
 
   def not_obscured?(start_tile, end_tile)
@@ -272,15 +296,14 @@ class Game
       possible_pieces = find_piece_locations(move)
       piece = find_piece(possible_pieces, move)
       if piece.length == 0
-        puts 'No piece identified - make another selection'
+        puts 'No valid piece identified - make another selection'
       else
         move_piece(piece, move)
-        @move_complete = true
       end
     end
     @move_complete = false
     # TODO: if multiples pieces are found, reprompt user input with file, rank, or rank and file, until only one option remains
-    move_log << move # TODO: if a piece was captured add an x to the player's entered move before the location (Kxg5))
+    move_log << move # TODO: if a piece was captured add an x to the player's entered move before the location (Kxg5)) array.insert(-2, 'x')
     update_current_player
   end
 

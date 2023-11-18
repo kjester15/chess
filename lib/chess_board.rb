@@ -65,6 +65,8 @@ class Board
   def tile_occupied?(coordinate)
     row = coordinate[0]
     column = coordinate[1]
-    !@board_array[row][column] == ' '
+    return unless @board_array[row][column] != ' '
+
+    true
   end
 end
