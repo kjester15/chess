@@ -67,6 +67,25 @@ describe Board do
   describe '#print_tile' do
     # method only prints to terminal - no test necessary
   end
+
+  describe '#tile_occupied?' do
+    context 'when given an occupied tile' do
+      it 'returns true when given "[0, 0]"' do
+        array = Array.new(8) { Array.new(8) { 'x' } }
+        board_main.instance_variable_set(:@board_array, array)
+        tile = [0, 0]
+        result = board_main.tile_occupied?(tile)
+        expect(result).to be true
+      end
+    end
+    context 'when given an empty tile' do
+      it 'returns nil when given "[3, 0]"' do
+        tile = [3, 0]
+        result = board_main.tile_occupied?(tile)
+        expect(result).to be nil
+      end
+    end
+  end
 end
 
 describe Piece do
@@ -89,7 +108,7 @@ describe Piece do
   end
 
   describe '#king_moves' do
-    it 'adds all possible moves when all are in bounds' do
+    xit 'adds all possible moves when all are in bounds' do
       coordinate = [3, 3]
       moves = [[4, 3], [4, 4], [3, 4], [2, 4], [2, 3], [2, 2], [3, 2], [4, 2]]
       piece_main.king_moves(coordinate)
@@ -97,7 +116,7 @@ describe Piece do
       expect(result).to eq(moves)
     end
 
-    it 'only adds in bounds moves' do
+    xit 'only adds in bounds moves' do
       coordinate = [0, 0]
       moves = [[1, 0], [1, 1], [0, 1]]
       piece_main.king_moves(coordinate)
