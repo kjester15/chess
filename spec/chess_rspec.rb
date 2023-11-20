@@ -95,6 +95,231 @@ describe Piece do
     # Initialize -> No test necessary when only creating instance variables.
   end
 
+  describe '#pawn_move_directions' do
+    context 'when a white pawn is moving' do
+      it 'returns standard directions when moving on 2nd+ turn and not capturing' do
+        position = [5, 0]
+        color = 'white'
+        capture = false
+        expected_directions = [[-1, 0]]
+        result = piece_main.pawn_move_directions(position, color, capture)
+        expect(result).to eq(expected_directions)
+      end
+
+      it 'returns standard plus first move directions when moving on first turn and not capturing' do
+        position = [6, 0]
+        color = 'white'
+        capture = false
+        expected_directions = [[-1, 0], [-2, 0]]
+        result = piece_main.pawn_move_directions(position, color, capture)
+        expect(result).to eq(expected_directions)
+      end
+
+      it 'returns standard plus capture directions when moving on 2nd+ turn and capturing' do
+        position = [4, 0]
+        color = 'white'
+        capture = true
+        expected_directions = [[-1, 0], [-1, 1], [-1, -1]]
+        result = piece_main.pawn_move_directions(position, color, capture)
+        expect(result).to eq(expected_directions)
+      end
+    end
+
+    context 'when a black pawn is moving' do
+      it 'returns standard directions when moving on 2nd+ turn and not capturing' do
+        position = [2, 0]
+        color = 'black'
+        capture = false
+        expected_directions = [[1, 0]]
+        result = piece_main.pawn_move_directions(position, color, capture)
+        expect(result).to eq(expected_directions)
+      end
+
+      it 'returns standard plus first move directions when moving on first turn and not capturing' do
+        position = [1, 0]
+        color = 'black'
+        capture = false
+        expected_directions = [[1, 0], [2, 0]]
+        result = piece_main.pawn_move_directions(position, color, capture)
+        expect(result).to eq(expected_directions)
+      end
+
+      it 'returns standard plus capture directions when moving on 2nd+ turn and capturing' do
+        position = [4, 0]
+        color = 'black'
+        capture = true
+        expected_directions = [[1, 0], [1, 1], [1, -1]]
+        result = piece_main.pawn_move_directions(position, color, capture)
+        expect(result).to eq(expected_directions)
+      end
+    end
+  end
+
+  describe '#pawn_moves' do
+    context 'when a white pawn is moving' do
+      it 'returns correct tiles when moving on first turn and not capturing' do
+        position = [6, 3]
+        color = 'white'
+        capture = false
+        expected_moves = [[5, 3], [4, 3]]
+        result = piece_main.pawn_moves(position, color, capture)
+        expect(result).to eq(expected_moves)
+      end
+
+      it 'returns correct tiles when moving on 2nd+ turn and not capturing' do
+        position = [5, 3]
+        color = 'white'
+        capture = false
+        expected_moves = [[4, 3]]
+        result = piece_main.pawn_moves(position, color, capture)
+        expect(result).to eq(expected_moves)
+      end
+
+      it 'returns correct tiles when moving on 2nd+ turn and capturing' do
+        position = [5, 3]
+        color = 'white'
+        capture = true
+        expected_moves = [[4, 3], [4, 4], [4, 2]]
+        result = piece_main.pawn_moves(position, color, capture)
+        expect(result).to eq(expected_moves)
+      end
+
+      it 'doesn\'t add out of bounds tiles' do
+        position = [4, 0]
+        color = 'white'
+        capture = true
+        expected_moves = [[3, 0], [3, 1]]
+        result = piece_main.pawn_moves(position, color, capture)
+        expect(result).to eq(expected_moves)
+      end
+    end
+
+    context 'when a black pawn is moving' do
+      it 'returns correct tiles when moving on first turn and not capturing' do
+        position = [1, 3]
+        color = 'black'
+        capture = false
+        expected_moves = [[2, 3], [3, 3]]
+        result = piece_main.pawn_moves(position, color, capture)
+        expect(result).to eq(expected_moves)
+      end
+
+      it 'returns correct tiles when moving on 2nd+ turn and not capturing' do
+        position = [2, 3]
+        color = 'black'
+        capture = false
+        expected_moves = [[3, 3]]
+        result = piece_main.pawn_moves(position, color, capture)
+        expect(result).to eq(expected_moves)
+      end
+
+      it 'returns correct tiles when moving on 2nd+ turn and capturing' do
+        position = [2, 3]
+        color = 'black'
+        capture = true
+        expected_moves = [[3, 3], [3, 4], [3, 2]]
+        result = piece_main.pawn_moves(position, color, capture)
+        expect(result).to eq(expected_moves)
+      end
+
+      it 'doesn\'t add out of bounds tiles' do
+        position = [3, 0]
+        color = 'black'
+        capture = true
+        expected_moves = [[4, 0], [4, 1]]
+        result = piece_main.pawn_moves(position, color, capture)
+        expect(result).to eq(expected_moves)
+      end
+    end
+  end
+
+  describe '#king_knight_moves' do
+    context 'when a king is moving' do
+      it 'returns correct tiles' do
+        position = [3, 3]
+        move_directions = [[1, 0], [1, 1], [0, 1], [-1, 1], [-1, 0], [-1, -1], [0, -1], [1, -1]]
+        expected_moves = [[4, 3], [4, 4], [3, 4], [2, 4], [2, 3], [2, 2], [3, 2], [4, 2]]
+        result = piece_main.king_knight_moves(position, move_directions)
+        expect(result).to eq(expected_moves)
+      end
+
+      it 'doesn\'t add out of bounds tiles' do
+        position = [0, 0]
+        move_directions = [[1, 0], [1, 1], [0, 1], [-1, 1], [-1, 0], [-1, -1], [0, -1], [1, -1]]
+        expected_moves = [[1, 0], [1, 1], [0, 1]]
+        result = piece_main.king_knight_moves(position, move_directions)
+        expect(result).to eq(expected_moves)
+      end
+    end
+
+    context 'when a knight is moving' do
+      it 'returns correct tiles' do
+        position = [3, 3]
+        move_directions = [[-2, 1], [-1, 2], [1, 2], [2, 1], [2, -1], [1, -2], [-1, -2], [-2, -1]]
+        expected_moves = [[1, 4], [2, 5], [4, 5], [5, 4], [5, 2], [4, 1], [2, 1], [1, 2]]
+        result = piece_main.king_knight_moves(position, move_directions)
+        expect(result).to eq(expected_moves)
+      end
+
+      it 'doesn\'t add out of bounds tiles' do
+        position = [0, 0]
+        move_directions = [[-2, 1], [-1, 2], [1, 2], [2, 1], [2, -1], [1, -2], [-1, -2], [-2, -1]]
+        expected_moves = [[1, 2], [2, 1]]
+        result = piece_main.king_knight_moves(position, move_directions)
+        expect(result).to eq(expected_moves)
+      end
+    end
+  end
+
+  describe '#queen_rook_bishop_moves' do
+    context 'when a queen is moving' do
+      it 'returns correct tiles with none out of bounds' do
+        position = [3, 3]
+        move_directions = [['x', 0], ['x', 'x'], [0, 'x'], ['-x', 'x'], ['-x', 0], ['-x', '-x'], [0, '-x'], ['x', '-x']]
+        expected_moves = [[4, 3], [5, 3], [6, 3], [7, 3], # straight down
+                          [4, 4], [5, 5], [6, 6], [7, 7], # down right diagonal
+                          [3, 4], [3, 5], [3, 6], [3, 7], # straight right
+                          [2, 4], [1, 5], [0, 6], # up right diagonal
+                          [2, 3], [1, 3], [0, 3], # straight up
+                          [2, 2], [1, 1], [0, 0], # up left diagonal
+                          [3, 2], [3, 1], [3, 0], # straight left
+                          [4, 2], [5, 1], [6, 0]] # down left diagonal
+        result = piece_main.queen_rook_bishop_moves(position, move_directions)
+        expect(result).to eq(expected_moves)
+      end
+    end
+
+    context 'when a rook is moving' do
+      it 'returns correct tiles with none out of bounds' do
+        position = [3, 3]
+        move_directions = [['x', 0], [0, 'x'], ['-x', 0], [0, '-x']]
+        expected_moves = [[4, 3], [5, 3], [6, 3], [7, 3], # straight down
+                          [3, 4], [3, 5], [3, 6], [3, 7], # straight right
+                          [2, 3], [1, 3], [0, 3], # straight up
+                          [3, 2], [3, 1], [3, 0]] # straight left
+        result = piece_main.queen_rook_bishop_moves(position, move_directions)
+        expect(result).to eq(expected_moves)
+      end
+    end
+
+    context 'when a bishop is moving' do
+      it 'returns correct tiles with none out of bounds' do
+        position = [3, 3]
+        move_directions = [['x', 'x'], ['-x', 'x'], ['-x', '-x'], ['x', '-x']]
+        expected_moves = [[4, 4], [5, 5], [6, 6], [7, 7], # down right diagonal
+                          [2, 4], [1, 5], [0, 6], # up right diagonal
+                          [2, 2], [1, 1], [0, 0], # up left diagonal
+                          [4, 2], [5, 1], [6, 0]] # down left diagonal
+        result = piece_main.queen_rook_bishop_moves(position, move_directions)
+        expect(result).to eq(expected_moves)
+      end
+    end
+  end
+
+  describe '#piece_moves' do
+    # method only calls other methods based on case statement - no test necessary
+  end
+
   describe '#in_bounds?' do
     it 'returns true if coordinate is within the game board' do
       coordinate = [1, 1]
@@ -104,24 +329,6 @@ describe Piece do
     it 'returns nil if coordinate is outside the game board' do
       coordinate = [-1, 1]
       expect(piece_main.in_bounds?(coordinate)).to be nil
-    end
-  end
-
-  describe '#king_moves' do
-    xit 'adds all possible moves when all are in bounds' do
-      coordinate = [3, 3]
-      moves = [[4, 3], [4, 4], [3, 4], [2, 4], [2, 3], [2, 2], [3, 2], [4, 2]]
-      piece_main.king_moves(coordinate)
-      result = piece_main.instance_variable_get(:@possible_moves)
-      expect(result).to eq(moves)
-    end
-
-    xit 'only adds in bounds moves' do
-      coordinate = [0, 0]
-      moves = [[1, 0], [1, 1], [0, 1]]
-      piece_main.king_moves(coordinate)
-      result = piece_main.instance_variable_get(:@possible_moves)
-      expect(result).to eq(moves)
     end
   end
 end

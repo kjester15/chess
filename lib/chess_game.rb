@@ -1,3 +1,4 @@
+require 'pry-byebug'
 require_relative 'chess_board'
 require_relative 'chess_piece'
 
@@ -199,10 +200,11 @@ class Game
     moves = []
     color = @current_player[:color]
     pieces_array.each do |coordinate|
+      # binding.pry
       if %w[K Q R B N].include?(piece)
         moves = board.board_array[coordinate[0]][coordinate[1]].piece_moves(piece, coordinate)
       else
-        moves = board.board_array[coordinate[0]][coordinate[1]].pawn_moves(coordinate, color)
+        moves = board.board_array[coordinate[0]][coordinate[1]].pawn_moves(coordinate, color, is_pawn_capture?(coordinate, move))
       end
       added_move = add_moves(moves, tile, piece, coordinate)
       final_pieces << added_move unless added_move.nil?
@@ -215,11 +217,20 @@ class Game
     final_pieces # this is returning an array but the step above will narrow it down to one piece (tile)
   end
 
+  def is_pawn_capture?(start_tile, move)
+    move_to = translate_move(move[-2..])
+    return unless (start_tile[0] - move_to[0]).abs == 1 || (start_tile[1] - move_to[1]).abs == 1
+
+    board.tile_occupied?(move_to) ? true : nil
+  end
+
   def move_piece(piece, move)
     piece = piece[0] # remove this once #find_piece returns one piece and not an array
     move_to = translate_move(move[-2..])
     if board.tile_occupied?(move_to)
       unless can_capture?(piece, move)
+        # TODO: doesn't allow black pawn to capture white pawn when there are two pawns able to capture
+        # also didn't allow single black pawn to capture white pawn when it was a valid capture
         puts 'You cannot capture this piece.'
         return
       end
@@ -243,9 +254,9 @@ class Game
     true
   end
 
-  def can_capture?(start_tile, end_tile)
-    move_to = translate_move(end_tile[-2..])
-    piece = end_tile[0]
+  def can_capture?(start_tile, move)
+    move_to = translate_move(move[-2..])
+    piece = move[0]
     if %w[K Q R B N].include?(piece)
       board.board_array[move_to[0]][move_to[1]].color != @current_player[:color]
     elsif diagonal_from_pawn?(start_tile, move_to)
