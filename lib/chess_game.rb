@@ -5,14 +5,18 @@ require_relative 'chess_piece'
 class Game
   attr_accessor :player1, :player2, :board, :current_player, :move_log, :game_over, :move_complete
 
-  def initialize
+  def initialize(board, current_player = {})
     @player1 = { name: '', color: 'white' }
     @player2 = { name: '', color: 'black' }
-    @board = Board.new
-    @current_player = @player1
+    @board = board
+    @current_player = current_player
     @move_log = []
     @game_over = false
     @move_complete = false
+  end
+
+  def set_current_player
+    @current_player = @player1
   end
 
   def greeting_setup
@@ -200,7 +204,6 @@ class Game
     moves = []
     color = @current_player[:color]
     pieces_array.each do |coordinate|
-      # binding.pry
       if %w[K Q R B N].include?(piece)
         moves = board.board_array[coordinate[0]][coordinate[1]].piece_moves(piece, coordinate)
       else
@@ -219,7 +222,7 @@ class Game
 
   def is_pawn_capture?(start_tile, move)
     move_to = translate_move(move[-2..])
-    return unless (start_tile[0] - move_to[0]).abs == 1 || (start_tile[1] - move_to[1]).abs == 1
+    return unless (start_tile[0] - move_to[0]).abs == 1 && (start_tile[1] - move_to[1]).abs == 1
 
     board.tile_occupied?(move_to) ? true : nil
   end
@@ -323,6 +326,7 @@ class Game
     greeting_setup
     board.populate_board
     board.print_board
+    set_current_player
     until game_over
       puts "#{current_player[:name]}, your turn."
       player_turn
