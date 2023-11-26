@@ -586,8 +586,109 @@ describe Game do
   end
 
   describe '#narrow_pieces' do
-    context '' do
-      xit '' do
+    context 'when entered move is 2 characters long' do
+      it 'returns an empty array' do
+        final_pieces = [[0, 0], [1, 1], [2, 2], [3, 3], [4, 4], [5, 5], [6, 6], [7, 7]]
+        move = 'a3'
+        piece = []
+        result = game_main.narrow_pieces(final_pieces, move)
+        expect(result).to eq(piece)
+      end
+    end
+
+    context 'when entered move is 3 characters long and starts with a piece letter' do
+      it 'returns an empty array' do
+        final_pieces = [[0, 0], [1, 1], [2, 2], [3, 3], [4, 4], [5, 5], [6, 6], [7, 7]]
+        move = 'Ka3'
+        piece = []
+        result = game_main.narrow_pieces(final_pieces, move)
+        expect(result).to eq(piece)
+      end
+    end
+
+    context 'when entered move is 3 characters long and doesn\'t start with a piece letter' do
+      it 'returns [2, 2] when move[0] is c' do
+        final_pieces = [[0, 0], [1, 1], [2, 2], [3, 3], [4, 4], [5, 5], [6, 6], [7, 7]]
+        move = 'ca3'
+        piece = [[2, 2]]
+        result = game_main.narrow_pieces(final_pieces, move)
+        expect(result).to eq(piece)
+      end
+
+      it 'returns [3, 3] when move[0] is d' do
+        final_pieces = [[0, 0], [1, 1], [2, 2], [3, 3], [4, 4], [5, 5], [6, 6], [7, 7]]
+        move = 'da3'
+        piece = [[3, 3]]
+        result = game_main.narrow_pieces(final_pieces, move)
+        expect(result).to eq(piece)
+      end
+
+      it 'returns [2, 2] when move[0] is 6' do
+        final_pieces = [[0, 0], [1, 1], [2, 2], [3, 3], [4, 4], [5, 5], [6, 6], [7, 7]]
+        move = '6a3'
+        piece = [[2, 2]]
+        result = game_main.narrow_pieces(final_pieces, move)
+        expect(result).to eq(piece)
+      end
+
+      it 'returns [3, 3] when move[0] is 5' do
+        final_pieces = [[0, 0], [1, 1], [2, 2], [3, 3], [4, 4], [5, 5], [6, 6], [7, 7]]
+        move = '5a3'
+        piece = [[3, 3]]
+        result = game_main.narrow_pieces(final_pieces, move)
+        expect(result).to eq(piece)
+      end
+    end
+
+    context 'when entered move is 4 characters long' do
+      it 'returns [2, 2] when move[1] is c' do
+        final_pieces = [[0, 0], [1, 1], [2, 2], [3, 3], [4, 4], [5, 5], [6, 6], [7, 7]]
+        move = 'Kca3'
+        piece = [[2, 2]]
+        result = game_main.narrow_pieces(final_pieces, move)
+        expect(result).to eq(piece)
+      end
+
+      it 'returns [3, 3] when move[1] is d' do
+        final_pieces = [[0, 0], [1, 1], [2, 2], [3, 3], [4, 4], [5, 5], [6, 6], [7, 7]]
+        move = 'Kda3'
+        piece = [[3, 3]]
+        result = game_main.narrow_pieces(final_pieces, move)
+        expect(result).to eq(piece)
+      end
+
+      it 'returns [2, 2] when move[1] is 6' do
+        final_pieces = [[0, 0], [1, 1], [2, 2], [3, 3], [4, 4], [5, 5], [6, 6], [7, 7]]
+        move = 'K6a3'
+        piece = [[2, 2]]
+        result = game_main.narrow_pieces(final_pieces, move)
+        expect(result).to eq(piece)
+      end
+
+      it 'returns [3, 3] when move[1] is 5' do
+        final_pieces = [[0, 0], [1, 1], [2, 2], [3, 3], [4, 4], [5, 5], [6, 6], [7, 7]]
+        move = 'K5a3'
+        piece = [[3, 3]]
+        result = game_main.narrow_pieces(final_pieces, move)
+        expect(result).to eq(piece)
+      end
+    end
+
+    context 'when entered move is 5 characters long' do
+      it 'returns [2, 2] when move[1] is c and move[2] is 5' do
+        final_pieces = [[0, 0], [1, 1], [2, 2], [3, 3], [4, 4], [5, 5], [6, 6], [7, 7]]
+        move = 'Kc6a3'
+        piece = [[2, 2]]
+        result = game_main.narrow_pieces(final_pieces, move)
+        expect(result).to eq(piece)
+      end
+
+      it 'returns [5, 5] when move[1] is f and move[2] is 3' do
+        final_pieces = [[0, 0], [1, 1], [2, 2], [3, 3], [4, 4], [5, 5], [6, 6], [7, 7]]
+        move = 'Kf3a3'
+        piece = [[5, 5]]
+        result = game_main.narrow_pieces(final_pieces, move)
+        expect(result).to eq(piece)
       end
     end
   end
@@ -597,6 +698,24 @@ describe Game do
       xit '' do
       end
     end
+
+    # find_piece(pieces_array, move)
+    #   piece = move[0]
+    #   final_pieces = []
+    #   tile = translate_move(move[-2..])
+    #   moves = []
+    #   color = @current_player[:color]
+    #   pieces_array.each do |coordinate|
+    #     if %w[K Q R B N].include?(piece)
+    #       moves = board.board_array[coordinate[0]][coordinate[1]].piece_moves(piece, coordinate)
+    #     else
+    #       moves = board.board_array[coordinate[0]][coordinate[1]].pawn_moves(coordinate, color, is_pawn_capture?(coordinate, move))
+    #     end
+    #     added_move = add_moves(moves, tile, piece, coordinate)
+    #     final_pieces << added_move unless added_move.nil?
+    #   end
+    #   if final_pieces.length > 1 then final_pieces = narrow_pieces(final_pieces, move) end
+    #   final_pieces
   end
 
   describe '#is_pawn_capture?' do

@@ -191,14 +191,20 @@ class Game
 
   def narrow_pieces(final_pieces, move)
     file = %w[a b c d e f g h]
-    rank = [1, 2, 3, 4, 5, 6, 7, 8]
+    rank = %w[1 2 3 4 5 6 7 8]
     piece = []
     case move.length
     when 3
       unless %w[K Q R B N].include?(move[0])
-        file = move[0]
-        column = convert_file_to_column(file)
-        piece = final_pieces.select { |tile| tile[1] == column }
+        if file.include?(move[0])
+          file = move[0]
+          column = convert_file_to_column(file)
+          piece = final_pieces.select { |tile| tile[1] == column }
+        elsif rank.include?(move[0])
+          rank = move[0].to_i
+          row = (rank - 8).abs
+          piece = final_pieces.select { |tile| tile[0] == row }
+        end
       end
     when 4
       if file.include?(move[1])
@@ -206,16 +212,16 @@ class Game
         column = convert_file_to_column(file)
         piece = final_pieces.select { |tile| tile[1] == column }
       elsif rank.include?(move[1])
-        rank = move[1]
-        row = rank - 1
+        rank = move[1].to_i
+        row = (rank - 8).abs
         piece = final_pieces.select { |tile| tile[0] == row }
       end
     when 5
       if file.include?(move[1]) && rank.include?(move[2])
         file = move[1]
-        rank = move[2]
+        rank = move[2].to_i
         column = convert_file_to_column(file)
-        row = rank - 1
+        row = (rank - 8).abs
         piece = final_pieces.select { |tile| tile[0] == row && tile[1] == column }
       end
     end
