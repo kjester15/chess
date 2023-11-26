@@ -185,16 +185,41 @@ class Game
     if not_obscured?(coordinate, tile) then coordinate end
   end
 
+  def convert_file_to_column(file)
+    file.ord - 97
+  end
+
   def narrow_pieces(final_pieces, move)
-    # TODO: check if user input any rank or file specifications and use to narrow down pieces
-    if move.length == 3
-      # 
+    file = %w[a b c d e f g h]
+    rank = [1, 2, 3, 4, 5, 6, 7, 8]
+    piece = []
+    case move.length
+    when 3
+      unless %w[K Q R B N].include?(move[0])
+        file = move[0]
+        column = convert_file_to_column(file)
+        piece = final_pieces.select { |tile| tile[1] == column }
+      end
+    when 4
+      if file.include?(move[1])
+        file = move[1]
+        column = convert_file_to_column(file)
+        piece = final_pieces.select { |tile| tile[1] == column }
+      elsif rank.include?(move[1])
+        rank = move[1]
+        row = rank - 1
+        piece = final_pieces.select { |tile| tile[0] == row }
+      end
+    when 5
+      if file.include?(move[1]) && rank.include?(move[2])
+        file = move[1]
+        rank = move[2]
+        column = convert_file_to_column(file)
+        row = rank - 1
+        piece = final_pieces.select { |tile| tile[0] == row && tile[1] == column }
+      end
     end
-    if move.length == 4
-    end
-    if move.length == 5
-    end
-    final_pieces
+    piece
   end
 
   def find_piece(pieces_array, move)
@@ -212,12 +237,8 @@ class Game
       added_move = add_moves(moves, tile, piece, coordinate)
       final_pieces << added_move unless added_move.nil?
     end
-    # TODO:
-    # if final_pieces.length > 1
-    #   # final_pieces = new method to narrow final_pieces based on rest of input
-    #   final_pieces = narrow_pieces(final_pieces, move)
-    # end
-    final_pieces # this is returning an array but the step above will narrow it down to one piece (tile)
+    if final_pieces.length > 1 then final_pieces = narrow_pieces(final_pieces, move) end
+    final_pieces
   end
 
   def is_pawn_capture?(start_tile, move)
@@ -228,12 +249,10 @@ class Game
   end
 
   def move_piece(piece, move)
-    piece = piece[0] # remove this once #find_piece returns one piece and not an array
+    piece = piece[0]
     move_to = translate_move(move[-2..])
     if board.tile_occupied?(move_to)
       unless can_capture?(piece, move)
-        # TODO: doesn't allow black pawn to capture white pawn when there are two pawns able to capture
-        # also didn't allow single black pawn to capture white pawn when it was a valid capture
         puts 'You cannot capture this piece.'
         return
       end
@@ -317,7 +336,6 @@ class Game
       end
     end
     @move_complete = false
-    # TODO: if multiples pieces are found, reprompt user input with file, rank, or rank and file, until only one option remains
     move_log << move # TODO: if a piece was captured add an x to the player's entered move before the location (Kxg5)) array.insert(-2, 'x')
     update_current_player
   end
