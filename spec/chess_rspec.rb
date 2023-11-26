@@ -1,6 +1,7 @@
 require_relative '../lib/chess_board'
 require_relative '../lib/chess_piece'
 require_relative '../lib/chess_game'
+require 'pry-byebug'
 
 describe Board do
   subject(:board_main) { described_class.new }
@@ -613,13 +614,9 @@ describe Game do
     end
 
     context 'when two tiles given are 1 row and column apart and tile is occupied' do
-      let(:game_board) { instance_double(Board) }
-
       before do
         allow(game_main).to receive(:translate_move).and_return([2, 2])
-        allow(game_main).to receive(:game_board)
-        allow(game_board).to receive(:tile_occupied?).and_return(true)
-        # allow(game_board).to receive(:tile_occupied?).and_return(true)
+        allow(game_main.board).to receive(:tile_occupied?).and_return(true)
       end
 
       it 'returns true' do
@@ -627,6 +624,20 @@ describe Game do
         move = 'Kc6'
         result = game_main.is_pawn_capture?(start_tile, move)
         expect(result).to be true
+      end
+    end
+
+    context 'when two tiles given are 1 row and column apart and tile is not occupied' do
+      before do
+        allow(game_main).to receive(:translate_move).and_return([2, 2])
+        allow(game_main.board).to receive(:tile_occupied?).and_return(false)
+      end
+
+      it 'returns true' do
+        start_tile = [1, 1]
+        move = 'Kc6'
+        result = game_main.is_pawn_capture?(start_tile, move)
+        expect(result).to be nil
       end
     end
   end
