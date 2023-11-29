@@ -304,14 +304,13 @@ class Game
   end
 
   def move_piece(piece, move)
-    piece = piece[0]
     move_to = translate_move(move[-2..])
     if board.tile_occupied?(move_to)
       unless can_capture?(piece, move)
         puts 'You cannot capture this piece.'
         return
       end
-    elsif en_passant?(piece)[1]
+    elsif !en_passant?(piece).nil? && en_passant?(piece)[1]
       captured_pawn = en_passant?(piece)[2]
       board.board_array[captured_pawn[0]][captured_pawn[1]] = ' '
     end
@@ -408,8 +407,17 @@ class Game
     # TODO
   end
 
-  def promotion?
-    # TODO
+  def promotion?(move)
+    move_to = translate_move(move[-2..])
+    return unless board.board_array[move_to[0]][move_to[1]].instance_of?(Piece)
+
+    return unless board.board_array[move_to[0]][move_to[1]].type == 'pawn'
+
+    if @current_player[:color] == 'white' && move_to[0] == 0
+      board.board_array[move_to[0]][move_to[1]] = Piece.new('queen', 'white', [move_to[0], move_to[1]])
+    elsif @current_player[:color] == 'black' && move_to[0] == 7
+      board.board_array[move_to[0]][move_to[1]].type = Piece.new('queen', 'black', [move_to[0], move_to[1]])
+    end
   end
 
   def player_turn
@@ -425,7 +433,8 @@ class Game
       if piece.length == 0
         puts 'No valid piece identified - make another selection'
       else
-        move_piece(piece, move)
+        move_piece(piece[0], move)
+        promotion?(move)
       end
     end
     @move_complete = false
@@ -444,6 +453,8 @@ class Game
       update_enpassant_count
       reset_en_passant
       board.print_board
+      # check for check/checkmate here, using current player color
+      # check for game over (no opposite color king on board)
     end
   end
 
