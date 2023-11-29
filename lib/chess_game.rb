@@ -3,7 +3,7 @@ require_relative 'chess_board'
 require_relative 'chess_piece'
 
 class Game
-  attr_accessor :player1, :player2, :board, :current_player, :move_log, :game_over, :move_complete, :current_enpassant, :enpassant_count
+  attr_accessor :player1, :player2, :board, :current_player, :move_log, :game_over, :move_complete
 
   def initialize(board, current_player = {})
     @player1 = { name: '', color: 'white' }
@@ -13,8 +13,6 @@ class Game
     @move_log = []
     @game_over = false
     @move_complete = false
-    @current_enpassant = ''
-    @enpassant_count = 2
   end
 
   def set_current_player
@@ -355,10 +353,6 @@ class Game
     end
   end
 
-  def castle?
-    # TODO
-  end
-
   def can_capture?(start_tile, move)
     move_to = translate_move(move[-2..])
     piece = move[0]
@@ -402,6 +396,10 @@ class Game
     true
   end
 
+  def castle?
+    # TODO
+  end
+
   def check?
     # TODO
   end
@@ -431,7 +429,7 @@ class Game
       end
     end
     @move_complete = false
-    move_log << move # TODO: if a piece was captured add an x to the player's entered move before the location (Kxg5)) array.insert(-2, 'x')
+    move_log << move
     update_current_player
   end
 
@@ -443,9 +441,9 @@ class Game
     until game_over
       puts "#{current_player[:name]}, your turn."
       player_turn
-      board.print_board
       update_enpassant_count
       reset_en_passant
+      board.print_board
     end
   end
 
