@@ -3,7 +3,7 @@ require_relative 'chess_board'
 require_relative 'chess_piece'
 
 class Game
-  attr_accessor :player1, :player2, :board, :current_player, :move_log, :game_over, :move_complete
+  attr_accessor :player1, :player2, :board, :current_player, :move_log, :game_over, :move_complete, :current_enpassant, :enpassant_count
 
   def initialize(board, current_player = {})
     @player1 = { name: '', color: 'white' }
@@ -13,6 +13,8 @@ class Game
     @move_log = []
     @game_over = false
     @move_complete = false
+    @current_enpassant = ''
+    @enpassant_count = 2
   end
 
   def set_current_player
@@ -229,21 +231,28 @@ class Game
   end
 
   def find_piece(pieces_array, move)
-    piece = move[0]
-    final_pieces = []
     tile = translate_move(move[-2..])
-    moves = []
     color = @current_player[:color]
-    pieces_array.each do |coordinate|
+    piece = move[0]
+    final_pieces = call_moves_method(piece, pieces_array, move, color, tile)
+    if final_pieces.length > 1 then final_pieces = narrow_pieces(final_pieces, move) end
+    final_pieces
+  end
+
+  def call_moves_method(piece, pieces, move, color, tile)
+    final_pieces = []
+    moves = []
+    pieces.each do |coordinate|
       if %w[K Q R B N].include?(piece)
         moves = board.board_array[coordinate[0]][coordinate[1]].piece_moves(piece, coordinate)
       else
-        moves = board.board_array[coordinate[0]][coordinate[1]].pawn_moves(coordinate, color, is_pawn_capture?(coordinate, move))
+        moves = board.board_array[coordinate[0]][coordinate[1]].pawn_moves(coordinate, color,
+                                                                           is_pawn_capture?(coordinate, move),
+                                                                           en_passant?(coordinate))
       end
       added_move = add_moves(moves, tile, piece, coordinate)
       final_pieces << added_move unless added_move.nil?
     end
-    if final_pieces.length > 1 then final_pieces = narrow_pieces(final_pieces, move) end
     final_pieces
   end
 
@@ -254,6 +263,48 @@ class Game
     board.tile_occupied?(move_to) ? true : nil
   end
 
+  def pawn_first_move?(start_tile, end_tile)
+    return unless board.board_array[start_tile[0]][start_tile[1]].type == 'pawn'
+
+    return unless (start_tile[0] - end_tile[0]).abs == 2
+
+    return unless start_tile[0] == 1 || start_tile[0] == 6
+
+    if board.board_array[start_tile[0]][start_tile[1]].color == 'black' && start_tile[0] == 1
+      board.board_array[start_tile[0]][start_tile[1]].en_passant = true
+      board.board_array[start_tile[0]][start_tile[1]].en_passant_count = 2
+    elsif board.board_array[start_tile[0]][start_tile[1]].color == 'white' && start_tile[0] == 6
+      board.board_array[start_tile[0]][start_tile[1]].en_passant = true
+      board.board_array[start_tile[0]][start_tile[1]].en_passant_count = 2
+    end
+    @current_enpassant = board.board_array[start_tile[0]][start_tile[1]]
+  end
+
+  def update_enpassant_count
+    8.times do |row|
+      8.times do |column|
+        unless board.board_array[row][column] == ' '
+          if board.board_array[row][column].en_passant == true
+            board.board_array[row][column].en_passant_count -= 1
+          end
+        end
+      end
+    end
+  end
+
+  def reset_en_passant
+    8.times do |row|
+      8.times do |column|
+        unless board.board_array[row][column] == ' '
+          if board.board_array[row][column].en_passant_count == 0
+            board.board_array[row][column].en_passant = false
+            board.board_array[row][column].en_passant_count = ''
+          end
+        end
+      end
+    end
+  end
+
   def move_piece(piece, move)
     piece = piece[0]
     move_to = translate_move(move[-2..])
@@ -262,8 +313,18 @@ class Game
         puts 'You cannot capture this piece.'
         return
       end
+    elsif en_passant?(piece)[1]
+      captured_pawn = en_passant?(piece)[2]
+      board.board_array[move_to[0]][move_to[1]] = board.board_array[piece[0]][piece[1]]
+      board.board_array[move_to[0]][move_to[1]].coordinate = [move_to]
+      board.board_array[piece[0]][piece[1]] = ' '
+      board.board_array[captured_pawn[0]][captured_pawn[1]] = ' '
+      @move_complete = true
+      return
     end
+    pawn_first_move?(piece, move_to)
     board.board_array[move_to[0]][move_to[1]] = board.board_array[piece[0]][piece[1]]
+    board.board_array[move_to[0]][move_to[1]].coordinate = [move_to]
     board.board_array[piece[0]][piece[1]] = ' '
     @move_complete = true
   end
@@ -280,6 +341,27 @@ class Game
     return unless (end_tile[1] - start_tile[1]).abs == 1
 
     true
+  end
+
+  def en_passant?(start_tile)
+    return unless board.board_array[start_tile[0]][start_tile[1]].type == 'pawn'
+
+    left_check = [start_tile[0], start_tile[1] - 1]
+    right_check = [start_tile[0], start_tile[1] + 1]
+
+    if board.board_array[left_check[0]][left_check[1]].instance_of?(Piece) &&
+       board.board_array[left_check[0]][left_check[1]].en_passant == true
+      ['left', true, left_check]
+    elsif board.board_array[right_check[0]][right_check[1]].instance_of?(Piece) &&
+          board.board_array[right_check[0]][right_check[1]].en_passant == true
+      ['right', true, right_check]
+    else
+      ['none', false]
+    end
+  end
+
+  def castle?
+    # TODO
   end
 
   def can_capture?(start_tile, move)
@@ -325,6 +407,18 @@ class Game
     true
   end
 
+  def check?
+    # TODO
+  end
+
+  def checkmate?
+    # TODO
+  end
+
+  def promotion?
+    # TODO
+  end
+
   def player_turn
     until move_complete
       move = player_input
@@ -355,9 +449,12 @@ class Game
       puts "#{current_player[:name]}, your turn."
       player_turn
       board.print_board
+      update_enpassant_count
+      reset_en_passant
     end
   end
 
-  # def save_game
-  # end
+  def save_game
+    # TODO
+  end
 end

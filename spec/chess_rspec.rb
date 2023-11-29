@@ -585,6 +585,10 @@ describe Game do
     end
   end
 
+  describe '#convert_file_to_column' do
+    # method only subtracts from input - no testing required
+  end
+
   describe '#narrow_pieces' do
     context 'when entered move is 2 characters long' do
       it 'returns an empty array' do
@@ -694,28 +698,38 @@ describe Game do
   end
 
   describe '#find_piece' do
-    context '' do
-      xit '' do
+    subject(:game_main) { described_class.new(board, current) }
+    let(:current) { { name: 'test', color: 'white' } }
+    let(:board) { instance_double(Board.new(Array.new(8) { Array.new(8) { 'x' } })) }
+
+    before do
+      allow(game_main).to receive(:translate_move).and_return([5, 0])
+      allow(board).to receive(:piece_moves)
+      allow(game_main).to receive(:add_moves)
+      allow(game_main).to receive(:narrow_pieces)
+    end
+
+    context 'when piece is K/Q/R/B/N' do
+      xit 'calls #piece_moves' do
+        move = 'Ka3'
+        pieces_array = [[0, 0], [1, 1], [2, 2], [3, 3], [4, 4], [5, 5], [6, 6], [7, 7]]
+        # binding.pry
+        expect(board).to receive(:piece_moves).exactly(8).times
+        expect(game_main).to receive(:add_moves).exactly(8).times
+        expect(game_main).to receive(:narrow_pieces).once
+
+        game_main.find_piece(pieces_array, move)
       end
     end
 
-    # find_piece(pieces_array, move)
-    #   piece = move[0]
-    #   final_pieces = []
-    #   tile = translate_move(move[-2..])
-    #   moves = []
-    #   color = @current_player[:color]
-    #   pieces_array.each do |coordinate|
-    #     if %w[K Q R B N].include?(piece)
-    #       moves = board.board_array[coordinate[0]][coordinate[1]].piece_moves(piece, coordinate)
-    #     else
-    #       moves = board.board_array[coordinate[0]][coordinate[1]].pawn_moves(coordinate, color, is_pawn_capture?(coordinate, move))
-    #     end
-    #     added_move = add_moves(moves, tile, piece, coordinate)
-    #     final_pieces << added_move unless added_move.nil?
-    #   end
-    #   if final_pieces.length > 1 then final_pieces = narrow_pieces(final_pieces, move) end
-    #   final_pieces
+    context 'when piece is a pawn' do
+      xit 'calls #pawn_moves' do
+        move = 'a3'
+        pieces_array = [[0, 0], [1, 1], [2, 2], [3, 3], [4, 4], [5, 5], [6, 6], [7, 7]]
+        expect(game_main).to receive(:pawn_moves).with().exactly(8).times
+        game_main.find_piece(pieces_array, move)
+      end
+    end
   end
 
   describe '#is_pawn_capture?' do
