@@ -315,12 +315,7 @@ class Game
       end
     elsif en_passant?(piece)[1]
       captured_pawn = en_passant?(piece)[2]
-      board.board_array[move_to[0]][move_to[1]] = board.board_array[piece[0]][piece[1]]
-      board.board_array[move_to[0]][move_to[1]].coordinate = [move_to]
-      board.board_array[piece[0]][piece[1]] = ' '
       board.board_array[captured_pawn[0]][captured_pawn[1]] = ' '
-      @move_complete = true
-      return
     end
     pawn_first_move?(piece, move_to)
     board.board_array[move_to[0]][move_to[1]] = board.board_array[piece[0]][piece[1]]
