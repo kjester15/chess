@@ -397,14 +397,49 @@ class Game
 
   def castle?
     # TODO
+    #   1. Move king 2 tiles towards either rook
+    #   2. Move rook king moved towards on opposite side of king
+    # Rules:
+    #   1. King and Rook CANNOT HAVE BEEN MOVED YET
+    #   2. King CANNOT BE UNDER ATTACK
+    #   3. King CANNOT CASTLE THROUGH CHECK (i.e queen can attack the square between the king and rook)
+  end
+
+  def prevent_king_check
+    # TODO: call when player is moving king to prevent them from moving to a tile where they'll be in check
+    # use #check? to determine if the end position is in check
+  end
+
+  def find_king
+    color = @current_player[:color] == 'white' ? 'black' : 'white'
+    8.times do |row|
+      8.times do |column|
+        unless board.board_array[row][column] == ' '
+          if board.board_array[row][column].type == 'king' && board.board_array[row][column].color == color
+            return [row, column]
+          end
+        end
+      end
+    end
+    false
   end
 
   def check?
     # TODO
+    # starting from king tile, check all move types around it to see if any opposing pieces are there and unobstructed
   end
 
   def checkmate?
     # TODO
+    # run #check
+    # if true, check if king can make any moves -> if not, checkmate
+  end
+
+  def game_over?
+    if find_king == false
+      puts "Congratulations #{current_player[:name]}, you win!"
+      @game_over = true
+    end
   end
 
   def promotion?(move)
@@ -439,7 +474,6 @@ class Game
     end
     @move_complete = false
     move_log << move
-    update_current_player
   end
 
   def run_game
@@ -449,12 +483,15 @@ class Game
     set_current_player
     until game_over
       puts "#{current_player[:name]}, your turn."
+      # ask if they want to save here
       player_turn
       update_enpassant_count
       reset_en_passant
       board.print_board
       # check for check/checkmate here, using current player color
       # check for game over (no opposite color king on board)
+      game_over?
+      update_current_player
     end
   end
 
