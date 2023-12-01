@@ -1,6 +1,7 @@
 require 'pry-byebug'
 require_relative 'chess_board'
 require_relative 'chess_piece'
+require 'yaml'
 
 class Game
   attr_accessor :player1, :player2, :board, :current_player, :move_log, :game_over, :move_complete
@@ -21,6 +22,10 @@ class Game
 
   def greeting_setup
     puts 'Hello! Welcome to Chess. Let\'s play a game in the console.'
+    # TODO: add load YAML here
+    puts 'If you would like to load a previous game, please type LOAD - otherwise hit enter'
+    load = gets.chomp == 'LOAD' ? true : false
+    if load then load_game end
     puts 'What is player 1\'s name?'
     @player1[:name] = gets.chomp
     puts "#{player1[:name]} will be white."
@@ -539,7 +544,9 @@ class Game
     set_current_player
     until game_over
       puts "#{current_player[:name]}, your turn."
-      # ask if they want to save here
+      puts 'If you would like to save your game, please type SAVE - otherwise hit enter'
+      save = gets.chomp == 'SAVE' ? true : false
+      if save then create_save end
       player_turn
       update_enpassant_count
       reset_en_passant
@@ -557,7 +564,27 @@ class Game
     end
   end
 
-  def save_game
+  def create_save
+    save = YAML.dump(self)
+    puts 'Please enter a save ID for your game: '
+    id = gets.chomp
+    save_game(id, save)
+  end
+
+  def save_game(id, save_object)
+    Dir.mkdir('saves') unless Dir.exist?('saves')
+    filename = "saves/#{id}"
+    File.open(filename, 'w') do |file|
+      file.puts save_object
+    end
+  end
+
+  def load_game
     # TODO
+    puts 'Please enter the game\'s save ID: '
+    id = gets.chomp
+    filename = "saves/#{id}"
+    load = YAML.safe_load(filename)
+    puts load
   end
 end
