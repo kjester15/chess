@@ -163,6 +163,22 @@ class Game
     piece
   end
 
+  def convert_piece_to_symbol(piece)
+    case piece
+    when 'king'
+      symbol = 'K'
+    when 'queen'
+      symbol = 'Q'
+    when 'knight'
+      symbol = 'N'
+    when 'bishop'
+      symbol = 'B'
+    when 'rook'
+      symbol = 'R'
+    end
+    symbol
+  end
+
   def find_piece_locations(move)
     piece = convert_symbol_to_piece(move[0])
     color = @current_player[:color]
@@ -182,7 +198,9 @@ class Game
     return unless moves.include?(tile)
 
     coordinate unless %w[Q R B].include?(piece)
-    if not_obscured?(coordinate, tile) then coordinate end
+    if not_obscured?(coordinate, tile)
+      [coordinate, tile]
+    end
   end
 
   def convert_file_to_column(file)
@@ -249,7 +267,7 @@ class Game
                                                                            en_passant?(coordinate))
       end
       added_move = add_moves(moves, tile, piece, coordinate)
-      final_pieces << added_move unless added_move.nil?
+      final_pieces << added_move[0] unless added_move.nil?
     end
     final_pieces
   end
@@ -262,6 +280,7 @@ class Game
   end
 
   def pawn_first_move?(start_tile, end_tile)
+    # TODO: create methods in board to update board variables instead of updating via game
     return unless board.board_array[start_tile[0]][start_tile[1]].type == 'pawn'
 
     return unless (start_tile[0] - end_tile[0]).abs == 2
@@ -279,6 +298,7 @@ class Game
   end
 
   def update_enpassant_count
+    # TODO: create methods in board to update board variables instead of updating via game
     8.times do |row|
       8.times do |column|
         unless board.board_array[row][column] == ' '
@@ -291,6 +311,7 @@ class Game
   end
 
   def reset_en_passant
+    # TODO: create methods in board to update board variables instead of updating via game
     8.times do |row|
       8.times do |column|
         unless board.board_array[row][column] == ' '
@@ -304,6 +325,7 @@ class Game
   end
 
   def move_piece(piece, move)
+    # TODO: create methods in board to update board variables instead of updating via game
     move_to = translate_move(move[-2..])
     if board.tile_occupied?(move_to)
       unless can_capture?(piece, move)
@@ -424,21 +446,55 @@ class Game
     false
   end
 
+  def collect_pieces
+    color = @current_player[:color]
+    pieces = []
+    8.times do |row|
+      8.times do |column|
+        unless board.board_array[row][column] == ' '
+          if board.board_array[row][column].instance_of?(Piece) && board.board_array[row][column].color == color
+            pieces << [row, column]
+          end
+        end
+      end
+    end
+    pieces
+  end
+
   def check?
-    # TODO
-    # starting from king tile, check all move types around it to see if any opposing pieces are there and unobstructed
+    king_tile = find_king
+    pieces = collect_pieces
+    pieces.each do |tile|
+      piece_type = board.board_array[tile[0]][tile[1]].type
+      symbol = convert_piece_to_symbol(piece_type)
+      if %w[K Q R B N].include?(symbol)
+        all_moves = board.board_array[tile[0]][tile[1]].piece_moves(symbol, tile)
+        moves = add_moves(all_moves, king_tile, symbol, tile)
+      else
+        moves = board.board_array[tile[0]][tile[1]].pawn_moves(tile, @current_player[:color], true, ['', false])
+      end
+      next if moves.nil?
+      if moves[1] == king_tile
+        return true
+      end
+    end
   end
 
   def checkmate?
     # TODO
-    # run #check
-    # if true, check if king can make any moves -> if not, checkmate
+    return unless check? == true
+
+    king_tile = find_king
+    moves = board.board_array[king_tile[0]][king_tile[1]].piece_moves('K', king_tile)
+    return unless moves.nil?
+
+    return true
   end
 
   def game_over?
     if find_king == false
       puts "Congratulations #{current_player[:name]}, you win!"
-      @game_over = true
+      return true
     end
   end
 
@@ -488,9 +544,15 @@ class Game
       update_enpassant_count
       reset_en_passant
       board.print_board
-      # check for check/checkmate here, using current player color
-      # check for game over (no opposite color king on board)
-      game_over?
+      if check?
+        if checkmate?
+          puts 'Checkmate'
+          @game_over = true
+        else
+          puts 'Check'
+        end
+      end
+      if game_over? then @game_over = true end
       update_current_player
     end
   end
