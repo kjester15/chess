@@ -22,7 +22,6 @@ class Game
 
   def greeting_setup
     puts 'Hello! Welcome to Chess. Let\'s play a game in the console.'
-    # TODO: add load YAML here
     puts 'If you would like to load a previous game, please type LOAD - otherwise hit enter'
     load = gets.chomp == 'LOAD' ? true : false
     if load then load_game end
@@ -379,13 +378,27 @@ class Game
     end
   end
 
-  def can_capture?(start_tile, move)
+  def convert_coord_to_move(symbol, coordinate)
+    rank = (coordinate[0] - 8).abs
+    file = (coordinate[1] + 97).chr
+    "#{symbol}#{file}#{rank}"
+  end
+
+  def can_capture?(start_tile, move, check = nil)
     move_to = translate_move(move[-2..])
     piece = move[0]
-    if %w[K Q R B N].include?(piece)
-      board.board_array[move_to[0]][move_to[1]].color != @current_player[:color]
-    elsif diagonal_from_pawn?(start_tile, move_to)
-      board.board_array[move_to[0]][move_to[1]].color != @current_player[:color]
+    if check.nil?
+      if %w[K Q R B N].include?(piece)
+        board.board_array[move_to[0]][move_to[1]].color != @current_player[:color]
+      elsif diagonal_from_pawn?(start_tile, move_to)
+        board.board_array[move_to[0]][move_to[1]].color != @current_player[:color]
+      end
+    else
+      if %w[K Q R B N].include?(piece)
+        board.board_array[move_to[0]][move_to[1]].color == @current_player[:color]
+      elsif diagonal_from_pawn?(start_tile, move_to)
+        board.board_array[move_to[0]][move_to[1]].color == @current_player[:color]
+      end
     end
   end
 
@@ -489,11 +502,19 @@ class Game
     # TODO
     return unless check? == true
 
+    moves = []
     king_tile = find_king
-    moves = board.board_array[king_tile[0]][king_tile[1]].piece_moves('K', king_tile)
+    possible_moves = board.board_array[king_tile[0]][king_tile[1]].piece_moves('K', king_tile)
+    possible_moves.each do |move|
+      if board.board_array[move[0]][move[1]] == ' '
+        moves << move
+      elsif board.tile_occupied?(move) && can_capture?(king_tile, convert_coord_to_move('K', move), true)
+        moves << move
+      end
+    end
     return unless moves.nil?
 
-    return true
+    true
   end
 
   def game_over?
@@ -551,7 +572,7 @@ class Game
       update_enpassant_count
       reset_en_passant
       board.print_board
-      if check?
+      if check? == true
         if checkmate?
           puts 'Checkmate'
           @game_over = true
@@ -565,7 +586,7 @@ class Game
   end
 
   def create_save
-    save = YAML.dump(self)
+    save = Psych.dump(self)
     puts 'Please enter a save ID for your game: '
     id = gets.chomp
     save_game(id, save)
@@ -573,7 +594,7 @@ class Game
 
   def save_game(id, save_object)
     Dir.mkdir('saves') unless Dir.exist?('saves')
-    filename = "saves/#{id}"
+    filename = "saves/#{id}.yml"
     File.open(filename, 'w') do |file|
       file.puts save_object
     end
@@ -583,8 +604,8 @@ class Game
     # TODO
     puts 'Please enter the game\'s save ID: '
     id = gets.chomp
-    filename = "saves/#{id}"
-    load = YAML.safe_load(filename)
-    puts load
+    file = File.read("saves/#{id}.yml")
+    load = Psych.load_file(file)
+    p load
   end
 end

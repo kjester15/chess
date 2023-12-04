@@ -1,9 +1,9 @@
 --- !ruby/object:Game
 player1: &1
-  :name: Ky
+  :name: test
   :color: white
 player2:
-  :name: ca
+  :name: test
   :color: black
 board: !ruby/object:Board
   board_array:
