@@ -102,8 +102,9 @@ describe Piece do
         position = [5, 0]
         color = 'white'
         capture = false
+        en_passant = ['none', false]
         expected_directions = [[-1, 0]]
-        result = piece_main.pawn_move_directions(position, color, capture)
+        result = piece_main.pawn_move_directions(position, color, capture, en_passant)
         expect(result).to eq(expected_directions)
       end
 
@@ -111,8 +112,9 @@ describe Piece do
         position = [6, 0]
         color = 'white'
         capture = false
+        en_passant = ['none', false]
         expected_directions = [[-1, 0], [-2, 0]]
-        result = piece_main.pawn_move_directions(position, color, capture)
+        result = piece_main.pawn_move_directions(position, color, capture, en_passant)
         expect(result).to eq(expected_directions)
       end
 
@@ -120,8 +122,31 @@ describe Piece do
         position = [4, 0]
         color = 'white'
         capture = true
+        en_passant = ['none', false]
         expected_directions = [[-1, 0], [-1, 1], [-1, -1]]
-        result = piece_main.pawn_move_directions(position, color, capture)
+        result = piece_main.pawn_move_directions(position, color, capture, en_passant)
+        expect(result).to eq(expected_directions)
+      end
+
+      it 'returns standard plus left en passant directions when able to perform en passant' do
+        position = [4, 1]
+        color = 'white'
+        capture = false
+        left_check = [4, 0]
+        en_passant = ['left', true, left_check]
+        expected_directions = [[-1, 0], [-1, -1]]
+        result = piece_main.pawn_move_directions(position, color, capture, en_passant)
+        expect(result).to eq(expected_directions)
+      end
+
+      it 'returns standard plus right en passant directions when able to perform en passant' do
+        position = [4, 1]
+        color = 'white'
+        capture = false
+        right_check = [4, 2]
+        en_passant = ['right', true, right_check]
+        expected_directions = [[-1, 0], [-1, 1]]
+        result = piece_main.pawn_move_directions(position, color, capture, en_passant)
         expect(result).to eq(expected_directions)
       end
     end
@@ -131,8 +156,9 @@ describe Piece do
         position = [2, 0]
         color = 'black'
         capture = false
+        en_passant = ['none', false]
         expected_directions = [[1, 0]]
-        result = piece_main.pawn_move_directions(position, color, capture)
+        result = piece_main.pawn_move_directions(position, color, capture, en_passant)
         expect(result).to eq(expected_directions)
       end
 
@@ -140,8 +166,9 @@ describe Piece do
         position = [1, 0]
         color = 'black'
         capture = false
+        en_passant = ['none', false]
         expected_directions = [[1, 0], [2, 0]]
-        result = piece_main.pawn_move_directions(position, color, capture)
+        result = piece_main.pawn_move_directions(position, color, capture, en_passant)
         expect(result).to eq(expected_directions)
       end
 
@@ -149,8 +176,31 @@ describe Piece do
         position = [4, 0]
         color = 'black'
         capture = true
+        en_passant = ['none', false]
         expected_directions = [[1, 0], [1, 1], [1, -1]]
-        result = piece_main.pawn_move_directions(position, color, capture)
+        result = piece_main.pawn_move_directions(position, color, capture, en_passant)
+        expect(result).to eq(expected_directions)
+      end
+
+      it 'returns standard plus left en passant directions when able to perform en passant' do
+        position = [4, 1]
+        color = 'black'
+        capture = false
+        left_check = [4, 0]
+        en_passant = ['left', true, left_check]
+        expected_directions = [[1, 0], [1, -1]]
+        result = piece_main.pawn_move_directions(position, color, capture, en_passant)
+        expect(result).to eq(expected_directions)
+      end
+
+      it 'returns standard plus right en passant directions when able to perform en passant' do
+        position = [4, 1]
+        color = 'black'
+        capture = false
+        right_check = [4, 2]
+        en_passant = ['right', true, right_check]
+        expected_directions = [[1, 0], [1, 1]]
+        result = piece_main.pawn_move_directions(position, color, capture, en_passant)
         expect(result).to eq(expected_directions)
       end
     end
@@ -162,8 +212,9 @@ describe Piece do
         position = [6, 3]
         color = 'white'
         capture = false
+        en_passant = ['none', false]
         expected_moves = [[5, 3], [4, 3]]
-        result = piece_main.pawn_moves(position, color, capture)
+        result = piece_main.pawn_moves(position, color, capture, en_passant)
         expect(result).to eq(expected_moves)
       end
 
@@ -171,8 +222,9 @@ describe Piece do
         position = [5, 3]
         color = 'white'
         capture = false
+        en_passant = ['none', false]
         expected_moves = [[4, 3]]
-        result = piece_main.pawn_moves(position, color, capture)
+        result = piece_main.pawn_moves(position, color, capture, en_passant)
         expect(result).to eq(expected_moves)
       end
 
@@ -180,8 +232,9 @@ describe Piece do
         position = [5, 3]
         color = 'white'
         capture = true
+        en_passant = ['none', false]
         expected_moves = [[4, 3], [4, 4], [4, 2]]
-        result = piece_main.pawn_moves(position, color, capture)
+        result = piece_main.pawn_moves(position, color, capture, en_passant)
         expect(result).to eq(expected_moves)
       end
 
@@ -189,8 +242,9 @@ describe Piece do
         position = [4, 0]
         color = 'white'
         capture = true
+        en_passant = ['none', false]
         expected_moves = [[3, 0], [3, 1]]
-        result = piece_main.pawn_moves(position, color, capture)
+        result = piece_main.pawn_moves(position, color, capture, en_passant)
         expect(result).to eq(expected_moves)
       end
     end
@@ -200,8 +254,9 @@ describe Piece do
         position = [1, 3]
         color = 'black'
         capture = false
+        en_passant = ['none', false]
         expected_moves = [[2, 3], [3, 3]]
-        result = piece_main.pawn_moves(position, color, capture)
+        result = piece_main.pawn_moves(position, color, capture, en_passant)
         expect(result).to eq(expected_moves)
       end
 
@@ -209,8 +264,9 @@ describe Piece do
         position = [2, 3]
         color = 'black'
         capture = false
+        en_passant = ['none', false]
         expected_moves = [[3, 3]]
-        result = piece_main.pawn_moves(position, color, capture)
+        result = piece_main.pawn_moves(position, color, capture, en_passant)
         expect(result).to eq(expected_moves)
       end
 
@@ -218,8 +274,9 @@ describe Piece do
         position = [2, 3]
         color = 'black'
         capture = true
+        en_passant = ['none', false]
         expected_moves = [[3, 3], [3, 4], [3, 2]]
-        result = piece_main.pawn_moves(position, color, capture)
+        result = piece_main.pawn_moves(position, color, capture, en_passant)
         expect(result).to eq(expected_moves)
       end
 
@@ -227,8 +284,9 @@ describe Piece do
         position = [3, 0]
         color = 'black'
         capture = true
+        en_passant = ['none', false]
         expected_moves = [[4, 0], [4, 1]]
-        result = piece_main.pawn_moves(position, color, capture)
+        result = piece_main.pawn_moves(position, color, capture, en_passant)
         expect(result).to eq(expected_moves)
       end
     end
@@ -713,7 +771,6 @@ describe Game do
       xit 'calls #piece_moves' do
         move = 'Ka3'
         pieces_array = [[0, 0], [1, 1], [2, 2], [3, 3], [4, 4], [5, 5], [6, 6], [7, 7]]
-        # binding.pry
         expect(board).to receive(:piece_moves).exactly(8).times
         expect(game_main).to receive(:add_moves).exactly(8).times
         expect(game_main).to receive(:narrow_pieces).once

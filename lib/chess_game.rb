@@ -205,10 +205,9 @@ class Game
   def add_moves(moves, tile, piece, coordinate)
     return unless moves.include?(tile)
 
-    coordinate unless %w[Q R B].include?(piece)
-    if not_obscured?(coordinate, tile)
-      [coordinate, tile]
-    end
+    return coordinate unless %w[Q R B].include?(piece)
+
+    return coordinate if not_obscured?(coordinate, tile)
   end
 
   def convert_file_to_column(file)
@@ -452,6 +451,7 @@ class Game
   end
 
   def prevent_king_check?(move_to)
+    # TODO: saying check when king tries to capture piece that isn't in check - refer to #check?
     return unless check?(move_to)
 
     puts 'That tile is in check, you cannot move there.'
@@ -488,6 +488,7 @@ class Game
   end
 
   def check?(king_tile = find_king)
+    # TODO: saying check when king tries to capture piece that isn't in check
     pieces = collect_pieces
     pieces.each do |tile|
       piece_type = board.board_array[tile[0]][tile[1]].type
@@ -525,7 +526,7 @@ class Game
   end
 
   def game_over?
-    if find_king == false
+    if find_king == false || checkmate?
       puts "Congratulations #{current_player[:name]}, you win!"
       return true
     end

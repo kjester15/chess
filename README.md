@@ -7,3 +7,7 @@ Rules for player input:
     - File notation is always lowercase (ex. 'Kg5' or 'e4')
     - When specifying file AND rank for a specific piece, file must come before rank (ex. 'Kd2g5')
 2. 
+
+Notes:
+- variable naming is an absolute mess. 
+- Classes are a mess - if I had time to refactor the whole thing I would
