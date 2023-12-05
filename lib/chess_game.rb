@@ -567,15 +567,19 @@ class Game
 
   def run_game
     greeting_setup
-    unless @load then board.populate_board end
-    board.print_board
-    unless @load then set_current_player end
+    unless @load
+      board.populate_board
+      set_current_player
+    end
+    system 'clear'
     until game_over
+      board.print_board
       puts "#{current_player[:name]}, your turn."
       player_turn
+      system 'clear'
+      board.print_board
       update_enpassant_count
       reset_en_passant
-      board.print_board
       if check? == true
         if checkmate?
           puts 'Checkmate'
@@ -589,6 +593,7 @@ class Game
       puts 'If you would like to save your game, please type SAVE (the next player will resume upon load) - otherwise hit enter'
       save = gets.chomp == 'SAVE' ? true : false
       if save then create_save end
+      system 'clear'
     end
   end
 
