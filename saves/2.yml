@@ -1,9 +1,9 @@
 --- !ruby/object:Game
-player1: &1
-  :name: test
+player1:
+  :name: k
   :color: white
-player2:
-  :name: test
+player2: &1
+  :name: c
   :color: black
 board: !ruby/object:Board
   board_array:
@@ -293,28 +293,7 @@ board: !ruby/object:Board
       coordinate:
       - 1
       - 4
-    - !ruby/object:Piece
-      pieces:
-        :king_black: "♔"
-        :queen_black: "♕"
-        :rook_black: "♖"
-        :bishop_black: "♗"
-        :knight_black: "♘"
-        :pawn_black: "♙"
-        :king_white: "♚"
-        :queen_white: "♛"
-        :rook_white: "♜"
-        :bishop_white: "♝"
-        :knight_white: "♞"
-        :pawn_white: "♟︎"
-      type: pawn
-      color: black
-      en_passant: false
-      en_passant_count: ''
-      symbol: "♙"
-      coordinate:
-      - 1
-      - 5
+    - " "
     - !ruby/object:Piece
       pieces:
         :king_black: "♔"
@@ -364,7 +343,28 @@ board: !ruby/object:Board
     - " "
     - " "
     - " "
-    - " "
+    - !ruby/object:Piece
+      pieces:
+        :king_black: "♔"
+        :queen_black: "♕"
+        :rook_black: "♖"
+        :bishop_black: "♗"
+        :knight_black: "♘"
+        :pawn_black: "♙"
+        :king_white: "♚"
+        :queen_white: "♛"
+        :rook_white: "♜"
+        :bishop_white: "♝"
+        :knight_white: "♞"
+        :pawn_white: "♟︎"
+      type: pawn
+      color: black
+      en_passant: false
+      en_passant_count: ''
+      symbol: "♙"
+      coordinate:
+      - - 2
+        - 5
     - " "
     - " "
   - - " "
@@ -377,15 +377,28 @@ board: !ruby/object:Board
     - " "
   - - " "
     - " "
-    - " "
-    - " "
-    - " "
-    - " "
-    - " "
-    - " "
-  - - " "
-    - " "
-    - " "
+    - !ruby/object:Piece
+      pieces:
+        :king_black: "♔"
+        :queen_black: "♕"
+        :rook_black: "♖"
+        :bishop_black: "♗"
+        :knight_black: "♘"
+        :pawn_black: "♙"
+        :king_white: "♚"
+        :queen_white: "♛"
+        :rook_white: "♜"
+        :bishop_white: "♝"
+        :knight_white: "♞"
+        :pawn_white: "♟︎"
+      type: pawn
+      color: white
+      en_passant: true
+      en_passant_count: 1
+      symbol: "♟︎"
+      coordinate:
+      - - 4
+        - 2
     - " "
     - " "
     - " "
@@ -411,8 +424,16 @@ board: !ruby/object:Board
       en_passant_count: ''
       symbol: "♟︎"
       coordinate:
-      - 6
-      - 0
+      - - 5
+        - 0
+    - " "
+    - " "
+    - " "
+    - " "
+    - " "
+    - " "
+    - " "
+  - - " "
     - !ruby/object:Piece
       pieces:
         :king_black: "♔"
@@ -435,28 +456,7 @@ board: !ruby/object:Board
       coordinate:
       - 6
       - 1
-    - !ruby/object:Piece
-      pieces:
-        :king_black: "♔"
-        :queen_black: "♕"
-        :rook_black: "♖"
-        :bishop_black: "♗"
-        :knight_black: "♘"
-        :pawn_black: "♙"
-        :king_white: "♚"
-        :queen_white: "♛"
-        :rook_white: "♜"
-        :bishop_white: "♝"
-        :knight_white: "♞"
-        :pawn_white: "♟︎"
-      type: pawn
-      color: white
-      en_passant: false
-      en_passant_count: ''
-      symbol: "♟︎"
-      coordinate:
-      - 6
-      - 2
+    - " "
     - !ruby/object:Piece
       pieces:
         :king_black: "♔"
@@ -744,6 +744,10 @@ board: !ruby/object:Board
       - 7
       - 7
 current_player: *1
-move_log: []
+move_log:
+- a3
+- f6
+- c4
 game_over: false
 move_complete: false
+load: true

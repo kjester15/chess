@@ -4,7 +4,7 @@ require_relative 'chess_piece'
 require 'yaml'
 
 class Game
-  attr_accessor :player1, :player2, :board, :current_player, :move_log, :game_over, :move_complete
+  attr_accessor :player1, :player2, :board, :current_player, :move_log, :game_over, :move_complete, :load
 
   def initialize(board, current_player = {})
     @player1 = { name: '', color: 'white' }
@@ -14,6 +14,7 @@ class Game
     @move_log = []
     @game_over = false
     @move_complete = false
+    @load = false
   end
 
   def set_current_player
@@ -23,8 +24,11 @@ class Game
   def greeting_setup
     puts 'Hello! Welcome to Chess. Let\'s play a game in the console.'
     puts 'If you would like to load a previous game, please type LOAD - otherwise hit enter'
-    load = gets.chomp == 'LOAD' ? true : false
-    if load then load_game end
+    @load = gets.chomp == 'LOAD' ? true : false
+    if @load
+      load_game
+      return
+    end
     puts 'What is player 1\'s name?'
     @player1[:name] = gets.chomp
     puts "#{player1[:name]} will be white."
@@ -298,7 +302,6 @@ class Game
       board.board_array[start_tile[0]][start_tile[1]].en_passant = true
       board.board_array[start_tile[0]][start_tile[1]].en_passant_count = 2
     end
-    @current_enpassant = board.board_array[start_tile[0]][start_tile[1]]
   end
 
   def update_enpassant_count
@@ -499,7 +502,6 @@ class Game
   end
 
   def checkmate?
-    # TODO
     return unless check? == true
 
     moves = []
@@ -515,6 +517,7 @@ class Game
     return unless moves.nil?
 
     true
+    # TODO: need to add check that determines if any possible moves king can make are moves that are themselves in check
   end
 
   def game_over?
@@ -560,14 +563,11 @@ class Game
 
   def run_game
     greeting_setup
-    board.populate_board
+    unless @load then board.populate_board end
     board.print_board
-    set_current_player
+    unless @load then set_current_player end
     until game_over
       puts "#{current_player[:name]}, your turn."
-      puts 'If you would like to save your game, please type SAVE - otherwise hit enter'
-      save = gets.chomp == 'SAVE' ? true : false
-      if save then create_save end
       player_turn
       update_enpassant_count
       reset_en_passant
@@ -582,6 +582,9 @@ class Game
       end
       if game_over? then @game_over = true end
       update_current_player
+      puts 'If you would like to save your game, please type SAVE (the next player will resume upon load) - otherwise hit enter'
+      save = gets.chomp == 'SAVE' ? true : false
+      if save then create_save end
     end
   end
 
@@ -601,11 +604,16 @@ class Game
   end
 
   def load_game
-    # TODO
     puts 'Please enter the game\'s save ID: '
     id = gets.chomp
-    file = File.read("saves/#{id}.yml")
-    load = Psych.load_file(file)
-    p load
+    filename = "saves/#{id}.yml"
+    load = Psych.load_file(filename, aliases: true, permitted_classes: [Symbol, Game, Board, Piece])
+    @player1 = load.player1
+    @player2 = load.player2
+    @board = load.board
+    @current_player = load.current_player
+    @move_log = load.move_log
+    @game_over = load.game_over
+    @move_complete = load.move_complete
   end
 end
