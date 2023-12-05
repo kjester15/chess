@@ -334,6 +334,7 @@ class Game
   def move_piece(piece, move)
     # TODO: create methods in board to update board variables instead of updating via game
     move_to = translate_move(move[-2..])
+    symbol = move[0]
     if board.tile_occupied?(move_to)
       unless can_capture?(piece, move)
         puts 'You cannot capture this piece.'
@@ -344,6 +345,8 @@ class Game
       board.board_array[captured_pawn[0]][captured_pawn[1]] = ' '
     end
     pawn_first_move?(piece, move_to)
+    return if symbol == 'K' && prevent_king_check?(move_to)
+
     board.board_array[move_to[0]][move_to[1]] = board.board_array[piece[0]][piece[1]]
     board.board_array[move_to[0]][move_to[1]].coordinate = [move_to]
     board.board_array[piece[0]][piece[1]] = ' '
@@ -448,9 +451,11 @@ class Game
     #   3. King CANNOT CASTLE THROUGH CHECK (i.e queen can attack the square between the king and rook)
   end
 
-  def prevent_king_check
-    # TODO: call when player is moving king to prevent them from moving to a tile where they'll be in check
-    # use #check? to determine if the end position is in check
+  def prevent_king_check?(move_to)
+    return unless check?(move_to)
+
+    puts 'That tile is in check, you cannot move there.'
+    true
   end
 
   def find_king
@@ -482,8 +487,7 @@ class Game
     pieces
   end
 
-  def check?
-    king_tile = find_king
+  def check?(king_tile = find_king)
     pieces = collect_pieces
     pieces.each do |tile|
       piece_type = board.board_array[tile[0]][tile[1]].type
