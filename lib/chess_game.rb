@@ -26,7 +26,7 @@ class Game
     puts 'If you would like to load a previous game, please type LOAD - otherwise hit enter'
     @load = gets.chomp == 'LOAD' ? true : false
     if @load
-      load_game
+      load_game(get_load_data)
       return
     end
     puts 'What is player 1\'s name?'
@@ -274,7 +274,7 @@ class Game
                                                                            en_passant?(coordinate))
       end
       added_move = add_moves(moves, tile, piece, coordinate)
-      final_pieces << added_move[0] unless added_move.nil?
+      final_pieces << added_move unless added_move.nil?
     end
     final_pieces
   end
@@ -287,29 +287,27 @@ class Game
   end
 
   def pawn_first_move?(start_tile, end_tile)
-    # TODO: create methods in board to update board variables instead of updating via game
+    return unless board.board_array[start_tile[0]][start_tile[1]].instance_of?(Piece)
+
     return unless board.board_array[start_tile[0]][start_tile[1]].type == 'pawn'
 
     return unless (start_tile[0] - end_tile[0]).abs == 2
 
-    return unless start_tile[0] == 1 || start_tile[0] == 6
-
     if board.board_array[start_tile[0]][start_tile[1]].color == 'black' && start_tile[0] == 1
-      board.board_array[start_tile[0]][start_tile[1]].en_passant = true
-      board.board_array[start_tile[0]][start_tile[1]].en_passant_count = 2
+      board.board_array[start_tile[0]][start_tile[1]].update_enpassant(true)
+      board.board_array[start_tile[0]][start_tile[1]].update_enpassant_count(2)
     elsif board.board_array[start_tile[0]][start_tile[1]].color == 'white' && start_tile[0] == 6
-      board.board_array[start_tile[0]][start_tile[1]].en_passant = true
-      board.board_array[start_tile[0]][start_tile[1]].en_passant_count = 2
+      board.board_array[start_tile[0]][start_tile[1]].update_enpassant(true)
+      board.board_array[start_tile[0]][start_tile[1]].update_enpassant_count(2)
     end
   end
 
-  def update_enpassant_count
-    # TODO: create methods in board to update board variables instead of updating via game
+  def decrease_enpassant_count
     8.times do |row|
       8.times do |column|
         unless board.board_array[row][column] == ' '
           if board.board_array[row][column].en_passant == true
-            board.board_array[row][column].en_passant_count -= 1
+            board.board_array[row][column].decrease_enpassant_count(1)
           end
         end
       end
@@ -317,13 +315,12 @@ class Game
   end
 
   def reset_en_passant
-    # TODO: create methods in board to update board variables instead of updating via game
     8.times do |row|
       8.times do |column|
         unless board.board_array[row][column] == ' '
           if board.board_array[row][column].en_passant_count == 0
-            board.board_array[row][column].en_passant = false
-            board.board_array[row][column].en_passant_count = ''
+            board.board_array[row][column].update_enpassant(false)
+            board.board_array[row][column].update_enpassant_count('')
           end
         end
       end
@@ -331,7 +328,6 @@ class Game
   end
 
   def move_piece(piece, move)
-    # TODO: create methods in board to update board variables instead of updating via game
     move_to = translate_move(move[-2..])
     symbol = move[0]
     if board.tile_occupied?(move_to)
@@ -346,9 +342,9 @@ class Game
     pawn_first_move?(piece, move_to)
     return if symbol == 'K' && prevent_king_check?(move_to)
 
-    board.board_array[move_to[0]][move_to[1]] = board.board_array[piece[0]][piece[1]]
-    board.board_array[move_to[0]][move_to[1]].coordinate = [move_to]
-    board.board_array[piece[0]][piece[1]] = ' '
+    board.change_tile(move_to, piece)
+    board.update_coordinate(move_to)
+    board.clear_tile(piece)
     @move_complete = true
   end
 
@@ -367,6 +363,8 @@ class Game
   end
 
   def en_passant?(start_tile)
+    return unless board.board_array[start_tile[0]][start_tile[1]].instance_of?(Piece)
+
     return unless board.board_array[start_tile[0]][start_tile[1]].type == 'pawn'
 
     left_check = [start_tile[0], start_tile[1] - 1]
@@ -440,7 +438,7 @@ class Game
     true
   end
 
-  def castle?
+  def castle
     # TODO
     #   1. Move king 2 tiles towards either rook
     #   2. Move rook king moved towards on opposite side of king
@@ -451,8 +449,7 @@ class Game
   end
 
   def prevent_king_check?(move_to)
-    # TODO: saying check when king tries to capture piece that isn't in check - refer to #check?
-    return unless check?(move_to)
+    return unless check?(true, move_to)
 
     puts 'That tile is in check, you cannot move there.'
     true
@@ -487,8 +484,8 @@ class Game
     pieces
   end
 
-  def check?(king_tile = find_king)
-    # TODO: saying check when king tries to capture piece that isn't in check
+  def check?(prevent, move_to)
+    king_tile = prevent ? move_to : find_king
     pieces = collect_pieces
     pieces.each do |tile|
       piece_type = board.board_array[tile[0]][tile[1]].type
@@ -500,6 +497,7 @@ class Game
         moves = board.board_array[tile[0]][tile[1]].pawn_moves(tile, @current_player[:color], true, ['', false])
       end
       next if moves.nil?
+      # TODO: moves[1] assumes add_moves is returning a 2 element array, where the elements are [coordinate, tile] vs. just coordinate how it is now. tile in this case would be the king tile rather than the coordinate the piece is on
       if moves[1] == king_tile
         return true
       end
@@ -507,7 +505,7 @@ class Game
   end
 
   def checkmate?
-    return unless check? == true
+    return unless check?(false, nil) == true
 
     moves = []
     king_tile = find_king
@@ -532,16 +530,16 @@ class Game
     end
   end
 
-  def promotion?(move)
+  def promotion(move)
     move_to = translate_move(move[-2..])
     return unless board.board_array[move_to[0]][move_to[1]].instance_of?(Piece)
 
     return unless board.board_array[move_to[0]][move_to[1]].type == 'pawn'
 
     if @current_player[:color] == 'white' && move_to[0] == 0
-      board.board_array[move_to[0]][move_to[1]] = Piece.new('queen', 'white', [move_to[0], move_to[1]])
+      board.create_piece(move_to[0], move_to[1], 'queen', 'white')
     elsif @current_player[:color] == 'black' && move_to[0] == 7
-      board.board_array[move_to[0]][move_to[1]].type = Piece.new('queen', 'black', [move_to[0], move_to[1]])
+      board.create_piece(move_to[0], move_to[1], 'queen', 'black')
     end
   end
 
@@ -559,7 +557,7 @@ class Game
         puts 'No valid piece identified - make another selection'
       else
         move_piece(piece[0], move)
-        promotion?(move)
+        promotion(move)
       end
     end
     @move_complete = false
@@ -572,16 +570,16 @@ class Game
       board.populate_board
       set_current_player
     end
-    system 'clear'
+    # system 'clear'
     until game_over
       board.print_board
       puts "#{current_player[:name]}, your turn."
       player_turn
-      system 'clear'
+      # system 'clear'
       board.print_board
-      update_enpassant_count
+      decrease_enpassant_count
       reset_en_passant
-      if check? == true
+      if check?(false, nil) == true
         if checkmate?
           puts 'Checkmate'
           @game_over = true
@@ -592,9 +590,9 @@ class Game
       if game_over? then @game_over = true end
       update_current_player
       puts 'If you would like to save your game, please type SAVE (the next player will resume upon load) - otherwise hit enter'
-      save = gets.chomp == 'SAVE' ? true : false
+      save = gets.chomp == 'SAVE'
       if save then create_save end
-      system 'clear'
+      # system 'clear'
     end
   end
 
@@ -613,10 +611,21 @@ class Game
     end
   end
 
-  def load_game
-    puts 'Please enter the game\'s save ID: '
-    id = gets.chomp
-    filename = "saves/#{id}.yml"
+  def get_load_data
+    file_valid = false
+    until file_valid
+      puts 'Please enter the game\'s save ID: '
+      id = gets.chomp
+      if File.file?("saves/#{id}.yml")
+        file_valid = true
+      else
+        puts 'File name is not valid - please try again'
+      end
+    end
+    "saves/#{id}.yml"
+  end
+
+  def load_game(filename)
     load = Psych.load_file(filename, aliases: true, permitted_classes: [Symbol, Game, Board, Piece])
     @player1 = load.player1
     @player2 = load.player2

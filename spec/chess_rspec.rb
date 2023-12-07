@@ -87,6 +87,18 @@ describe Board do
       end
     end
   end
+
+  describe '#change_tile' do
+    # method only updates instance variable - no test required
+  end
+
+  describe '#update_coordinate' do
+    # method only updates instance variable - no test required
+  end
+
+  describe '#clear_tile' do
+    # method only updates instance variable - no test required
+  end
 end
 
 describe Piece do
@@ -390,6 +402,43 @@ describe Piece do
       expect(piece_main.in_bounds?(coordinate)).to be nil
     end
   end
+
+  describe '#update_enpassant' do
+    it 'updates @en_passant to true' do
+      value = true
+      piece_main.update_enpassant(value)
+      expect(piece_main.en_passant).to be true
+    end
+
+    it 'updates @en_passant to false' do
+      value = false
+      piece_main.update_enpassant(value)
+      expect(piece_main.en_passant).to be false
+    end
+  end
+
+  describe '#update_enpassant_count' do
+    it 'updates @en_passant_count to 2' do
+      value = 2
+      piece_main.update_enpassant_count(value)
+      expect(piece_main.en_passant_count).to eq(2)
+    end
+
+    it 'updates @en_passant_count to " "' do
+      value = ''
+      piece_main.update_enpassant_count(value)
+      expect(piece_main.en_passant_count).to eq('')
+    end
+  end
+
+  describe '#decrease_enpassant_count' do
+    it 'decrease @en_passant_count by 1' do
+      value = 1
+      piece_main.instance_variable_set(:@en_passant_count, 2)
+      piece_main.decrease_enpassant_count(value)
+      expect(piece_main.en_passant_count).to eq(1)
+    end
+  end
 end
 
 describe Game do
@@ -397,6 +446,10 @@ describe Game do
 
   describe '#initialize' do
     # Initialize -> No test necessary when only creating instance variables.
+  end
+
+  describe '#set_current_player' do
+    # method only sets value of instance variable - no test required
   end
 
   describe '#greeting_setup' do
@@ -522,28 +575,30 @@ describe Game do
       expect(result).to eq('queen')
     end
 
-    it 'returns rook when symbol is R' do
-      symbol = 'R'
-      result = game_main.convert_symbol_to_piece(symbol)
-      expect(result).to eq('rook')
-    end
-
-    it 'returns bishop when symbol is B' do
-      symbol = 'B'
-      result = game_main.convert_symbol_to_piece(symbol)
-      expect(result).to eq('bishop')
-    end
-
-    it 'returns knight when symbol is N' do
-      symbol = 'N'
-      result = game_main.convert_symbol_to_piece(symbol)
-      expect(result).to eq('knight')
-    end
-
     it 'returns pawn when symbol is anything else' do
       symbol = 'x'
       result = game_main.convert_symbol_to_piece(symbol)
       expect(result).to eq('pawn')
+    end
+  end
+
+  describe '#convert_piece_to_symbol' do
+    it 'returns K when piece is king' do
+      piece = 'king'
+      result = game_main.convert_piece_to_symbol(piece)
+      expect(result).to eq('K')
+    end
+
+    it 'returns queen when symbol is Q' do
+      piece = 'queen'
+      result = game_main.convert_piece_to_symbol(piece)
+      expect(result).to eq('Q')
+    end
+
+    it 'returns pawn when symbol is anything else' do
+      piece = 'pawn'
+      result = game_main.convert_piece_to_symbol(piece)
+      expect(result).to be nil
     end
   end
 
@@ -756,35 +811,66 @@ describe Game do
   end
 
   describe '#find_piece' do
-    subject(:game_main) { described_class.new(board, current) }
-    let(:current) { { name: 'test', color: 'white' } }
-    let(:board) { instance_double(Board.new(Array.new(8) { Array.new(8) { 'x' } })) }
-
-    before do
-      allow(game_main).to receive(:translate_move).and_return([5, 0])
-      allow(board).to receive(:piece_moves)
-      allow(game_main).to receive(:add_moves)
-      allow(game_main).to receive(:narrow_pieces)
-    end
-
-    context 'when piece is K/Q/R/B/N' do
-      xit 'calls #piece_moves' do
+    context 'when final_pieces is length = 1' do
+      it 'calls #translate_move & #call_moves_method' do
         move = 'Ka3'
         pieces_array = [[0, 0], [1, 1], [2, 2], [3, 3], [4, 4], [5, 5], [6, 6], [7, 7]]
-        expect(board).to receive(:piece_moves).exactly(8).times
-        expect(game_main).to receive(:add_moves).exactly(8).times
-        expect(game_main).to receive(:narrow_pieces).once
-
+        expect(game_main).to receive(:translate_move).once.and_return([0, 0])
+        expect(game_main).to receive(:call_moves_method).once.and_return([0, 0])
         game_main.find_piece(pieces_array, move)
       end
     end
 
-    context 'when piece is a pawn' do
-      xit 'calls #pawn_moves' do
-        move = 'a3'
+    context 'when final_pieces is length > 1' do
+      it 'calls #translate_move, #call_moves_method & #narrow_pieces' do
+        move = 'Ka3'
         pieces_array = [[0, 0], [1, 1], [2, 2], [3, 3], [4, 4], [5, 5], [6, 6], [7, 7]]
-        expect(game_main).to receive(:pawn_moves).with().exactly(8).times
+        expect(game_main).to receive(:translate_move).once.and_return([0, 0])
+        expect(game_main).to receive(:call_moves_method).once.and_return([[0, 0], [1, 1]])
+        expect(game_main).to receive(:narrow_pieces).once
         game_main.find_piece(pieces_array, move)
+      end
+    end
+  end
+
+  describe '#call_moves_method' do
+    let(:board) { Board.new(Array.new(8) { Array.new(8) { Piece.new('king', 'black', [1, 2]) } }) }
+    let(:player) { { name: 'test', color: 'white' } }
+    subject(:game_main) { described_class.new(board, player) }
+
+    context 'when move includes K Q R B or N' do
+      it 'calls #piece_moves & #add_moves' do
+        piece = 'K'
+        pieces = [[0, 0], [1, 1]]
+        move = 'Ka3'
+        color = 'white'
+        tile = [0, 0]
+        moves = [[0, 0], [1, 1]]
+        expect(game_main.board.board_array[0][0]).to receive(:piece_moves).and_return(moves)
+        expect(game_main.board.board_array[1][1]).to receive(:piece_moves).and_return(moves)
+        expect(game_main).to receive(:add_moves).with(moves, tile, piece, [0, 0])
+        expect(game_main).to receive(:add_moves).with(moves, tile, piece, [1, 1])
+        game_main.call_moves_method(piece, pieces, move, color, tile)
+      end
+    end
+
+    context 'when move does not include K Q R B or N' do
+      it 'calls #pawn_moves, #is_pawn_capture?, #en_passant?, & #add_moves' do
+        piece = 'x'
+        pieces = [[0, 0], [1, 1]]
+        move = 'a3'
+        color = 'white'
+        tile = [0, 0]
+        moves = [[0, 0], [1, 1]]
+        expect(game_main.board.board_array[0][0]).to receive(:pawn_moves).and_return(moves)
+        expect(game_main.board.board_array[1][1]).to receive(:pawn_moves).and_return(moves)
+        expect(game_main).to receive(:is_pawn_capture?).and_return(true)
+        expect(game_main).to receive(:is_pawn_capture?).and_return(true)
+        expect(game_main).to receive(:en_passant?)
+        expect(game_main).to receive(:en_passant?)
+        expect(game_main).to receive(:add_moves).with(moves, tile, piece, [0, 0])
+        expect(game_main).to receive(:add_moves).with(moves, tile, piece, [1, 1])
+        game_main.call_moves_method(piece, pieces, move, color, tile)
       end
     end
   end
@@ -832,26 +918,95 @@ describe Game do
     end
   end
 
+  describe '#pawn_first_move?' do
+    array = [%w[x x x x x x x x], ['x', 'x', Piece.new('pawn', 'black', [1, 2]), 'x', 'x', 'x', 'x', 'x'],
+             %w[x x x x x x x x], %w[x x x x x x x x], %w[x x x x x x x x], %w[x x x x x x x x],
+             ['x', 'x', Piece.new('pawn', 'white', [6, 2]), 'x', 'x', 'x', 'x', 'x'], %w[x x x x x x x x]]
+    let(:board) { Board.new(array) }
+    subject(:game_main) { described_class.new(board) }
+
+    context 'when called on a piece that is not a pawn' do
+      it 'returns nil' do
+        start_tile = [4, 4]
+        end_tile = [5, 5]
+        result = game_main.pawn_first_move?(start_tile, end_tile)
+        expect(result).to be nil
+      end
+    end
+
+    context 'when called on a pawn moving two tiles, from the wrong row' do
+      it 'returns nil' do
+        wrong_row = 5
+        start_tile = [wrong_row, 2]
+        end_tile = [4, 2]
+        result = game_main.pawn_first_move?(start_tile, end_tile)
+        expect(result).to be nil
+      end
+    end
+
+    context 'when called on a white pawn moving two tiles' do
+      it 'calls #update_enpassant & #update_enpassant_count' do
+        start_tile = [6, 2]
+        end_tile = [4, 2]
+        expect(game_main.board.board_array[start_tile[0]][start_tile[1]]).to receive(:update_enpassant).with(true)
+        expect(game_main.board.board_array[start_tile[0]][start_tile[1]]).to receive(:update_enpassant_count).with(2)
+        game_main.pawn_first_move?(start_tile, end_tile)
+      end
+    end
+
+    context 'when called on a black pawn moving two tiles' do
+      it 'calls #update_enpassant & #update_enpassant_count' do
+        start_tile = [1, 2]
+        end_tile = [3, 2]
+        expect(game_main.board.board_array[start_tile[0]][start_tile[1]]).to receive(:update_enpassant).with(true)
+        expect(game_main.board.board_array[start_tile[0]][start_tile[1]]).to receive(:update_enpassant_count).with(2)
+        game_main.pawn_first_move?(start_tile, end_tile)
+      end
+    end
+  end
+
+  describe '#decrease_enpassant_count' do
+    array = [[' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+             [' ', ' ', Piece.new('pawn', 'black', [1, 2], true, 2), ' ', ' ', ' ', ' ', ' '],
+             [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '], [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+             [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '], [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+             [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '], [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ']]
+    let(:board) { Board.new(array) }
+    subject(:game_main) { described_class.new(board) }
+
+    context 'when one pawn has @en_passant set to true' do
+      it 'calls #decrease_enpassant_count once' do
+        pawn_tile = [1, 2]
+        expect(game_main.board.board_array[pawn_tile[0]][pawn_tile[1]]).to receive(:decrease_enpassant_count).once
+        game_main.decrease_enpassant_count
+      end
+    end
+  end
+
+  describe '#reset_en_passant' do
+    array = [[' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+             [' ', ' ', Piece.new('pawn', 'black', [1, 2], true, 0), ' ', ' ', ' ', ' ', ' '],
+             [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '], [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+             [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '], [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+             [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '], [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ']]
+    let(:board) { Board.new(array) }
+    subject(:game_main) { described_class.new(board) }
+
+    context 'when one pawn has @en_passant_count set to 0' do
+      it 'calls #update_enpassant & #update_enpassant_count' do
+        pawn_tile = [1, 2]
+        expect(game_main.board.board_array[pawn_tile[0]][pawn_tile[1]]).to receive(:update_enpassant).once
+        expect(game_main.board.board_array[pawn_tile[0]][pawn_tile[1]]).to receive(:update_enpassant_count).once
+        game_main.reset_en_passant
+      end
+    end
+  end
+
   describe '#move_piece' do
     context '' do
       xit '' do
       end
     end
-
-    # move_piece(piece, move)
-    #   piece = piece[0] # remove this once #find_piece returns one piece and not an array
-    #   move_to = translate_move(move[-2..])
-    #   if board.tile_occupied?(move_to)
-    #     unless can_capture?(piece, move)
-    #       # TODO: doesn't allow black pawn to capture white pawn when there are two pawns able to capture
-    #       # also didn't allow single black pawn to capture white pawn when it was a valid capture
-    #       puts 'You cannot capture this piece.'
-    #       return
-    #     end
-    #   end
-    #   board.board_array[move_to[0]][move_to[1]] = board.board_array[piece[0]][piece[1]]
-    #   board.board_array[piece[0]][piece[1]] = ' '
-    #   @move_complete = true
   end
 
   describe '#translate_move' do
@@ -878,6 +1033,82 @@ describe Game do
         end_tile = [2, 2]
         result = game_main.diagonal_from_pawn?(start_tile, end_tile)
         expect(result).to be nil
+      end
+    end
+  end
+
+  describe '#en_passant?' do
+    pawn_true = Piece.new('pawn', 'black', [1, 2], true, 0)
+    pawn_false = Piece.new('pawn', 'black', [1, 2], false, 0)
+    not_pawn = Piece.new('king', 'black', [2, 2], true, 0)
+    array = [[' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '], [' ', pawn_true, pawn_true, ' ', ' ', ' ', ' ', ' '],
+             [' ', ' ', not_pawn, ' ', ' ', ' ', ' ', ' '], [' ', ' ', pawn_true, pawn_true, ' ', ' ', ' ', ' '],
+             [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '], [' ', ' ', ' ', pawn_true, ' ', ' ', ' ', ' '],
+             [' ', pawn_false, pawn_false, pawn_false, ' ', ' ', ' ', ' '], [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ']]
+    let(:board) { Board.new(array) }
+    subject(:game_main) { described_class.new(board) }
+
+    context 'when start tile is not a piece' do
+      it 'returns nil' do
+        start_tile = [0, 0]
+        result = game_main.en_passant?(start_tile)
+        expect(result).to be nil
+      end
+    end
+
+    context 'when start tile is not a pawn' do
+      it 'returns nil' do
+        start_tile = [2, 2]
+        result = game_main.en_passant?(start_tile)
+        expect(result).to be nil
+      end
+    end
+
+    context 'when start tile is a pawn and pawn to left has @en_passant = true' do
+      it 'returns correct array' do
+        start_tile = [1, 2]
+        correct_array = ['left', true, [1, 1]]
+        result = game_main.en_passant?(start_tile)
+        expect(result).to eq(correct_array)
+      end
+    end
+
+    context 'when start tile is a pawn and pawn to right has @en_passant = true' do
+      it 'returns correct array' do
+        start_tile = [3, 2]
+        correct_array = ['right', true, [3, 3]]
+        result = game_main.en_passant?(start_tile)
+        expect(result).to eq(correct_array)
+      end
+    end
+
+    context 'when start tile is a pawn and no pawn to right or left has @en_passant = true' do
+      it 'returns correct array' do
+        start_tile = [6, 2]
+        correct_array = ['none', false]
+        result = game_main.en_passant?(start_tile)
+        expect(result).to eq(correct_array)
+      end
+    end
+
+    context 'when start tile is a pawn and there is no pawn to right or left' do
+      it 'returns correct array' do
+        start_tile = [5, 3]
+        correct_array = ['none', false]
+        result = game_main.en_passant?(start_tile)
+        expect(result).to eq(correct_array)
+      end
+    end
+  end
+
+  describe '#convert_coord_to_move' do
+    context 'when given K and a coordinate' do
+      it 'returns the correct move' do
+        symbol = 'K'
+        coordinate = [1, 2]
+        move = 'Kc7'
+        result = game_main.convert_coord_to_move(symbol, coordinate)
+        expect(result).to eq(move)
       end
     end
   end
@@ -932,6 +1163,8 @@ describe Game do
         result = game_main.can_capture?(start_tile, move)
         expect(result).to be false
       end
+
+      # TODO: test when check is true
     end
 
     context 'when given a pawn of opposite color' do
@@ -1074,6 +1307,314 @@ describe Game do
         end_tile = [5, 5]
         result = game_main.not_obscured?(start_tile, end_tile)
         expect(result).to be true
+      end
+    end
+  end
+
+  describe '#castle' do
+    context '' do
+      xit '' do
+      end
+    end
+  end
+
+  describe '#prevent_king_check?' do
+    context 'when #check? returns false' do
+      it 'returns nil' do
+        move_to = [0, 0]
+        expect(game_main).to receive(:check?).and_return(false)
+        result = game_main.prevent_king_check?(move_to)
+        expect(result).to be nil
+      end
+    end
+
+    context 'when #check? returns true' do
+      it 'puts to terminal and returns true' do
+        move_to = [0, 0]
+        message = 'That tile is in check, you cannot move there.'
+        expect(game_main).to receive(:check?).and_return(true)
+        expect(game_main).to receive(:puts).with(message)
+        result = game_main.prevent_king_check?(move_to)
+        expect(result).to be true
+      end
+    end
+  end
+
+  describe '#find_king' do
+    context 'when color is white' do
+      array = [[' ', ' ', ' ', Piece.new('king', 'white', [0, 3]), ' ', ' ', ' ', ' '],
+               [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+               [' ', ' ', ' ', Piece.new('king', 'black', [2, 3]), ' ', ' ', ' ', ' '],
+               [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '], [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+               [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '], [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+               [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],]
+      let(:board) { Board.new(array) }
+      let(:player) { { name: 'test', color: 'white' } }
+      subject(:game_main) { described_class.new(board, player) }
+
+      it 'returns king coordinate of opposite color' do
+        king = [2, 3]
+        result = game_main.find_king
+        expect(result).to eq(king)
+      end
+    end
+
+    context 'when color is black' do
+      array = [[' ', ' ', ' ', Piece.new('king', 'white', [0, 3]), ' ', ' ', ' ', ' '],
+               [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+               [' ', ' ', ' ', Piece.new('king', 'black', [2, 3]), ' ', ' ', ' ', ' '],
+               [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '], [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+               [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '], [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+               [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],]
+      let(:board) { Board.new(array) }
+      let(:player) { { name: 'test', color: 'black' } }
+      subject(:game_main) { described_class.new(board, player) }
+
+      it 'returns king coordinate of opposite color' do
+        king = [0, 3]
+        result = game_main.find_king
+        expect(result).to eq(king)
+      end
+    end
+
+    context 'when no king of opposite color is found' do
+      array = [[' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '], [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+               [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '], [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+               [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '], [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+               [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '], [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],]
+      let(:board) { Board.new(array) }
+      let(:player) { { name: 'test', color: 'black' } }
+      subject(:game_main) { described_class.new(board, player) }
+
+      it 'returns false' do
+        result = game_main.find_king
+        expect(result).to be false
+      end
+    end
+  end
+
+  describe '#collect_pieces' do
+    context 'when current player is white' do
+      array = [[' ', ' ', ' ', Piece.new('king', 'white', [0, 3]), ' ', ' ', ' ', ' '],
+               [' ', ' ', ' ', Piece.new('king', 'black', [1, 3]), ' ', ' ', ' ', ' '],
+               [' ', ' ', ' ', Piece.new('king', 'white', [2, 3]), ' ', ' ', ' ', ' '],
+               [' ', ' ', ' ', Piece.new('king', 'black', [3, 3]), ' ', ' ', ' ', ' '],
+               [' ', ' ', ' ', Piece.new('king', 'white', [4, 3]), ' ', ' ', ' ', ' '],
+               [' ', ' ', ' ', Piece.new('king', 'black', [5, 3]), ' ', ' ', ' ', ' '],
+               [' ', ' ', ' ', Piece.new('king', 'white', [6, 3]), ' ', ' ', ' ', ' '],
+               [' ', ' ', ' ', Piece.new('king', 'black', [7, 3]), ' ', ' ', ' ', ' ']]
+      let(:board) { Board.new(array) }
+      let(:player) { { name: 'test', color: 'white' } }
+      subject(:game_main) { described_class.new(board, player) }
+
+      it 'returns correct piece array' do
+        pieces = [[0, 3], [2, 3], [4, 3], [6, 3]]
+        result = game_main.collect_pieces
+        expect(result).to eq(pieces)
+      end
+    end
+
+    context 'when current player is black' do
+      array = [[' ', ' ', ' ', Piece.new('king', 'white', [0, 3]), ' ', ' ', ' ', ' '],
+               [' ', ' ', ' ', Piece.new('king', 'black', [1, 3]), ' ', ' ', ' ', ' '],
+               [' ', ' ', ' ', Piece.new('king', 'white', [2, 3]), ' ', ' ', ' ', ' '],
+               [' ', ' ', ' ', Piece.new('king', 'black', [3, 3]), ' ', ' ', ' ', ' '],
+               [' ', ' ', ' ', Piece.new('king', 'white', [4, 3]), ' ', ' ', ' ', ' '],
+               [' ', ' ', ' ', Piece.new('king', 'black', [5, 3]), ' ', ' ', ' ', ' '],
+               [' ', ' ', ' ', Piece.new('king', 'white', [6, 3]), ' ', ' ', ' ', ' '],
+               [' ', ' ', ' ', Piece.new('king', 'black', [7, 3]), ' ', ' ', ' ', ' ']]
+      let(:board) { Board.new(array) }
+      let(:player) { { name: 'test', color: 'black' } }
+      subject(:game_main) { described_class.new(board, player) }
+
+      it 'returns correct piece array' do
+        pieces = [[1, 3], [3, 3], [5, 3], [7, 3]]
+        result = game_main.collect_pieces
+        expect(result).to eq(pieces)
+      end
+    end
+  end
+
+  describe '#check?' do
+    context 'when piece is K Q R B or N' do
+      let(:board) { Board.new(Array.new(8) { Array.new(8) { Piece.new('king', 'black', [1, 2]) } }) }
+      let(:player) { { name: 'test', color: 'white' } }
+      subject(:game_main) { described_class.new(board, player) }
+
+      it 'calls #collect_pieces, #convert_piece_to_symbol, #piece_moves, & #add_moves' do
+        pieces = [[0, 0]]
+        tile = pieces[0]
+        prevent = false
+        move_to = []
+        expect(game_main).to receive(:collect_pieces).and_return(pieces)
+        expect(game_main).to receive(:convert_piece_to_symbol).with('king').and_return('K')
+        expect(game_main.board.board_array[0][0]).to receive(:piece_moves).with('K', tile)
+        expect(game_main).to receive(:add_moves)
+        game_main.check?(prevent, move_to)
+      end
+    end
+
+    context 'when piece is pawn' do
+      let(:board) { Board.new(Array.new(8) { Array.new(8) { Piece.new('pawn', 'black', [1, 2]) } }) }
+      let(:player) { { name: 'test', color: 'white' } }
+      subject(:game_main) { described_class.new(board, player) }
+
+      it 'calls #collect_pieces, #convert_piece_to_symbol, & #pawn_moves' do
+        pieces = [[0, 0]]
+        tile = pieces[0]
+        prevent = false
+        move_to = []
+        expect(game_main).to receive(:collect_pieces).and_return(pieces)
+        expect(game_main).to receive(:convert_piece_to_symbol).with('pawn').and_return(nil)
+        expect(game_main.board.board_array[0][0]).to receive(:pawn_moves).with(tile, 'white', true, ['', false])
+        game_main.check?(prevent, move_to)
+      end
+    end
+
+    context 'when called from #prevent_king_check?' do
+      let(:board) { Board.new(Array.new(8) { Array.new(8) { Piece.new('pawn', 'black', [1, 2]) } }) }
+      let(:player) { { name: 'test', color: 'white' } }
+      subject(:game_main) { described_class.new(board, player) }
+
+      it 'does not call #find_king' do
+        prevent = true
+        move_to = [2, 2]
+        expect(game_main).not_to receive(:find_king)
+        game_main.check?(prevent, move_to)
+      end
+    end
+  end
+
+  describe '#checkmate?' do
+    context '' do
+      xit '' do
+      end
+    end
+  end
+
+  describe '#game_over?' do
+    context 'when there is no king left' do
+      it 'calls #find_king and puts to terminal' do
+        expect(game_main).to receive(:find_king).and_return(false)
+        expect(game_main).to receive(:puts).once
+        game_main.game_over?
+      end
+    end
+
+    context 'when there is a king' do
+      it 'calls #find_king & #checkmate? and puts to terminal' do
+        expect(game_main).to receive(:find_king).and_return(true)
+        expect(game_main).to receive(:checkmate?).and_return(true)
+        expect(game_main).to receive(:puts).once
+        game_main.game_over?
+      end
+    end
+
+    context 'when there is a king and it is not in checkmate' do
+      it 'calls #find_king & #checkmate? and does not puts to terminal' do
+        expect(game_main).to receive(:find_king).and_return(true)
+        expect(game_main).to receive(:checkmate?).and_return(false)
+        expect(game_main).not_to receive(:puts)
+        game_main.game_over?
+      end
+    end
+  end
+
+  describe '#promotion' do
+    context 'when moving a non-pawn piece' do
+      it 'returns nil' do
+        move = 'Kc8'
+        expect(game_main).to receive(:translate_move).and_return([0, 2])
+        result = game_main.promotion(move)
+        expect(result).to be nil
+      end
+    end
+
+    context 'when moving a pawn, current player is white, and tile is row 0' do
+      array = [[' ', ' ', Piece.new('pawn', 'white', [0, 3]), ' ', ' ', ' ', ' ', ' '],
+               [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+               [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+               [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+               [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+               [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+               [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+               [' ', ' ', Piece.new('pawn', 'black', [7, 2]), ' ', ' ', ' ', ' ', ' ']]
+      let(:board) { Board.new(array) }
+      let(:player) { { name: 'test', color: 'white' } }
+      subject(:game_main) { described_class.new(board, player) }
+
+      it 'calls #create_piece' do
+        move = 'c8'
+        move_to = [0, 2]
+        expect(game_main).to receive(:translate_move).and_return(move_to)
+        expect(game_main.board).to receive(:create_piece).with(move_to[0], move_to[1], 'queen', 'white')
+        game_main.promotion(move)
+      end
+    end
+
+    context 'when moving a pawn, current player is white, and tile is row 1' do
+      array = [[' ', ' ', Piece.new('pawn', 'white', [0, 3]), ' ', ' ', ' ', ' ', ' '],
+               [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+               [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+               [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+               [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+               [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+               [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+               [' ', ' ', Piece.new('pawn', 'black', [7, 2]), ' ', ' ', ' ', ' ', ' ']]
+      let(:board) { Board.new(array) }
+      let(:player) { { name: 'test', color: 'white' } }
+      subject(:game_main) { described_class.new(board, player) }
+
+      it 'calls #create_piece' do
+        move = 'c7'
+        move_to = [1, 2]
+        expect(game_main).to receive(:translate_move).and_return(move_to)
+        expect(game_main.board).not_to receive(:create_piece).with(move_to[0], move_to[1], 'queen', 'white')
+        game_main.promotion(move)
+      end
+    end
+
+    context 'when moving a pawn, current player is black, and tile is row 7' do
+      array = [[' ', ' ', Piece.new('pawn', 'white', [0, 3]), ' ', ' ', ' ', ' ', ' '],
+               [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+               [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+               [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+               [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+               [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+               [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+               [' ', ' ', Piece.new('pawn', 'black', [7, 2]), ' ', ' ', ' ', ' ', ' ']]
+      let(:board) { Board.new(array) }
+      let(:player) { { name: 'test', color: 'black' } }
+      subject(:game_main) { described_class.new(board, player) }
+
+      it 'calls #create_piece' do
+        move = 'c1'
+        move_to = [7, 2]
+        expect(game_main).to receive(:translate_move).and_return(move_to)
+        expect(game_main.board).to receive(:create_piece).with(move_to[0], move_to[1], 'queen', 'black')
+        game_main.promotion(move)
+      end
+    end
+
+    context 'when moving a pawn, current player is black, and tile is row 6' do
+      array = [[' ', ' ', Piece.new('pawn', 'white', [0, 3]), ' ', ' ', ' ', ' ', ' '],
+               [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+               [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+               [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+               [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+               [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+               [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+               [' ', ' ', Piece.new('pawn', 'black', [7, 2]), ' ', ' ', ' ', ' ', ' ']]
+      let(:board) { Board.new(array) }
+      let(:player) { { name: 'test', color: 'black' } }
+      subject(:game_main) { described_class.new(board, player) }
+
+      it 'calls #create_piece' do
+        move = 'c2'
+        move_to = [6, 2]
+        expect(game_main).to receive(:translate_move).and_return(move_to)
+        expect(game_main.board).not_to receive(:create_piece).with(move_to[0], move_to[1], 'queen', 'black')
+        game_main.promotion(move)
       end
     end
   end

@@ -69,4 +69,16 @@ class Board
 
     true
   end
+
+  def change_tile(move_to, piece)
+    board_array[move_to[0]][move_to[1]] = board_array[piece[0]][piece[1]]
+  end
+
+  def update_coordinate(move_to)
+    board_array[move_to[0]][move_to[1]].coordinate = move_to
+  end
+
+  def clear_tile(piece)
+    board_array[piece[0]][piece[1]] = ' '
+  end
 end

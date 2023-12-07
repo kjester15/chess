@@ -1,14 +1,14 @@
 class Piece
   attr_accessor :type, :color, :symbol, :coordinate, :en_passant, :en_passant_count
 
-  def initialize(type, color, coordinate)
+  def initialize(type, color, coordinate, en_passant = false, en_passant_count = '')
     @pieces = { king_black: '♔', queen_black: '♕', rook_black: '♖', bishop_black: '♗', knight_black: '♘',
                 pawn_black: '♙', king_white: '♚', queen_white: '♛', rook_white: '♜', bishop_white: '♝',
                 knight_white: '♞', pawn_white: '♟︎' }
     @type = type
     @color = color
-    @en_passant = false
-    @en_passant_count = ''
+    @en_passant = en_passant
+    @en_passant_count = en_passant_count
     @symbol = @pieces[:"#{type}_#{color}"]
     @coordinate = coordinate
   end
@@ -110,5 +110,17 @@ class Piece
         true
       end
     end
+  end
+
+  def update_enpassant(value)
+    @en_passant = value
+  end
+
+  def update_enpassant_count(value)
+    @en_passant_count = value
+  end
+
+  def decrease_enpassant_count(value)
+    @en_passant_count -= value
   end
 end
