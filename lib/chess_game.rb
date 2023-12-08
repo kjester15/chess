@@ -345,6 +345,7 @@ class Game
     board.change_tile(move_to, piece)
     board.update_coordinate(move_to)
     board.clear_tile(piece)
+    board.board_array[move_to[0]][move_to[1]].update_has_moved
     @move_complete = true
   end
 
@@ -439,12 +440,19 @@ class Game
   end
 
   def castle
+    # assign king and rook a has_moved true false variable
+    # if king is not in check, has_moved == false, and rook has_move == false
+    #   check that the tile moving to, and tile between, are both not in check
+    #     move king to move to tile, and rook on opposite side
+    #   else return
+    # else return
+
     # TODO
     #   1. Move king 2 tiles towards either rook
-    #   2. Move rook king moved towards on opposite side of king
+    #   2. Move rook that king moved towards on opposite side of king
     # Rules:
     #   1. King and Rook CANNOT HAVE BEEN MOVED YET
-    #   2. King CANNOT BE UNDER ATTACK
+    #   2. King CANNOT BE UNDER ATTACK (in check)
     #   3. King CANNOT CASTLE THROUGH CHECK (i.e queen can attack the square between the king and rook)
   end
 

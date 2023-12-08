@@ -1,5 +1,5 @@
 class Piece
-  attr_accessor :type, :color, :symbol, :coordinate, :en_passant, :en_passant_count
+  attr_accessor :type, :color, :symbol, :coordinate, :en_passant, :en_passant_count, :has_moved
 
   def initialize(type, color, coordinate, en_passant = false, en_passant_count = '')
     @pieces = { king_black: '♔', queen_black: '♕', rook_black: '♖', bishop_black: '♗', knight_black: '♘',
@@ -11,6 +11,7 @@ class Piece
     @en_passant_count = en_passant_count
     @symbol = @pieces[:"#{type}_#{color}"]
     @coordinate = coordinate
+    @has_moved = false
   end
 
   def pawn_move_directions(position, color, capture, enpassant)
@@ -122,5 +123,9 @@ class Piece
 
   def decrease_enpassant_count(value)
     @en_passant_count -= value
+  end
+
+  def update_has_moved
+    @has_moved = true
   end
 end

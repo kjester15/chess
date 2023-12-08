@@ -439,6 +439,13 @@ describe Piece do
       expect(piece_main.en_passant_count).to eq(1)
     end
   end
+
+  describe '#update_has_moved' do
+    it 'updates @has_moved to true' do
+      piece_main.update_has_moved
+      expect(piece_main.has_moved).to be true
+    end
+  end
 end
 
 describe Game do
@@ -1003,6 +1010,14 @@ describe Game do
   end
 
   describe '#move_piece' do
+    array = [[' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+             [' ', Piece.new('pawn', 'black', [1, 1], true, 2), ' ', ' ', ' ', ' ', ' ', ' '],
+             [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '], [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+             [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '], [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+             [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '], [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ']]
+    let(:board) { Board.new(array) }
+    subject(:game_main) { described_class.new(board) }
+
     context 'when #tile_occupied? and #can_capture?' do
       it 'calls all appropriate methods' do
         piece = [0, 0]
@@ -1016,6 +1031,7 @@ describe Game do
         expect(game_main.board).to receive(:change_tile).with(move_to, piece)
         expect(game_main.board).to receive(:update_coordinate).with(move_to)
         expect(game_main.board).to receive(:clear_tile).with(piece)
+        expect(game_main.board.board_array[move_to[0]][move_to[1]]).to receive(:update_has_moved)
         game_main.move_piece(piece, move)
       end
     end
@@ -1035,6 +1051,7 @@ describe Game do
         expect(game_main.board).not_to receive(:change_tile).with(move_to, piece)
         expect(game_main.board).not_to receive(:update_coordinate).with(move_to)
         expect(game_main.board).not_to receive(:clear_tile).with(piece)
+        expect(game_main.board.board_array[move_to[0]][move_to[1]]).not_to receive(:update_has_moved)
         game_main.move_piece(piece, move)
       end
     end
@@ -1054,6 +1071,7 @@ describe Game do
         expect(game_main.board).to receive(:change_tile).with(move_to, piece)
         expect(game_main.board).to receive(:update_coordinate).with(move_to)
         expect(game_main.board).to receive(:clear_tile).with(piece)
+        expect(game_main.board.board_array[move_to[0]][move_to[1]]).to receive(:update_has_moved)
         game_main.move_piece(piece, move)
       end
     end
@@ -1073,6 +1091,7 @@ describe Game do
         expect(game_main.board).to receive(:change_tile).with(move_to, piece)
         expect(game_main.board).to receive(:update_coordinate).with(move_to)
         expect(game_main.board).to receive(:clear_tile).with(piece)
+        expect(game_main.board.board_array[move_to[0]][move_to[1]]).to receive(:update_has_moved)
         game_main.move_piece(piece, move)
       end
     end
@@ -1090,6 +1109,7 @@ describe Game do
         expect(game_main.board).not_to receive(:change_tile).with(move_to, piece)
         expect(game_main.board).not_to receive(:update_coordinate).with(move_to)
         expect(game_main.board).not_to receive(:clear_tile).with(piece)
+        expect(game_main.board.board_array[move_to[0]][move_to[1]]).not_to receive(:update_has_moved)
         result = game_main.move_piece(piece, move)
         expect(result).to be nil
       end
