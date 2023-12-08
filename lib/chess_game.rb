@@ -337,7 +337,7 @@ class Game
       end
     elsif !en_passant?(piece).nil? && en_passant?(piece)[1]
       captured_pawn = en_passant?(piece)[2]
-      board.board_array[captured_pawn[0]][captured_pawn[1]] = ' '
+      board.clear_tile(captured_pawn)
     end
     pawn_first_move?(piece, move_to)
     return if symbol == 'K' && prevent_king_check?(move_to)
@@ -494,11 +494,10 @@ class Game
         all_moves = board.board_array[tile[0]][tile[1]].piece_moves(symbol, tile)
         moves = add_moves(all_moves, king_tile, symbol, tile)
       else
-        moves = board.board_array[tile[0]][tile[1]].pawn_moves(tile, @current_player[:color], true, ['', false])
+        all_moves = board.board_array[tile[0]][tile[1]].pawn_moves(tile, @current_player[:color], true, ['', false])
+        moves = add_moves(all_moves, king_tile, symbol, tile)
       end
-      next if moves.nil?
-      # TODO: moves[1] assumes add_moves is returning a 2 element array, where the elements are [coordinate, tile] vs. just coordinate how it is now. tile in this case would be the king tile rather than the coordinate the piece is on
-      if moves[1] == king_tile
+      unless moves.nil?
         return true
       end
     end
@@ -511,16 +510,15 @@ class Game
     king_tile = find_king
     possible_moves = board.board_array[king_tile[0]][king_tile[1]].piece_moves('K', king_tile)
     possible_moves.each do |move|
-      if board.board_array[move[0]][move[1]] == ' '
+      if board.board_array[move[0]][move[1]] == ' ' && !check?(true, move)
         moves << move
       elsif board.tile_occupied?(move) && can_capture?(king_tile, convert_coord_to_move('K', move), true)
         moves << move
       end
     end
-    return unless moves.nil?
+    return unless moves.empty?
 
     true
-    # TODO: need to add check that determines if any possible moves king can make are moves that are themselves in check
   end
 
   def game_over?

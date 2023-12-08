@@ -1003,8 +1003,95 @@ describe Game do
   end
 
   describe '#move_piece' do
-    context '' do
-      xit '' do
+    context 'when #tile_occupied? and #can_capture?' do
+      it 'calls all appropriate methods' do
+        piece = [0, 0]
+        move = 'Kb7'
+        move_to = [1, 1]
+        expect(game_main).to receive(:translate_move).with('b7').and_return(move_to)
+        expect(game_main.board).to receive(:tile_occupied?).with(move_to).and_return(true)
+        expect(game_main).to receive(:can_capture?).with(piece, move).and_return(true)
+        expect(game_main).to receive(:pawn_first_move?).with(piece, move_to)
+        expect(game_main).to receive(:prevent_king_check?).with(move_to).and_return(false)
+        expect(game_main.board).to receive(:change_tile).with(move_to, piece)
+        expect(game_main.board).to receive(:update_coordinate).with(move_to)
+        expect(game_main.board).to receive(:clear_tile).with(piece)
+        game_main.move_piece(piece, move)
+      end
+    end
+
+    context 'when #tile_occupied? but not #can_capture?' do
+      it 'returns after puts' do
+        piece = [0, 0]
+        move = 'Kb7'
+        move_to = [1, 1]
+        message = 'You cannot capture this piece.'
+        expect(game_main).to receive(:translate_move).with('b7').and_return(move_to)
+        expect(game_main.board).to receive(:tile_occupied?).with(move_to).and_return(true)
+        expect(game_main).to receive(:can_capture?).with(piece, move).and_return(false)
+        expect(game_main).to receive(:puts).with(message)
+        expect(game_main).not_to receive(:pawn_first_move?).with(piece, move_to)
+        expect(game_main).not_to receive(:prevent_king_check?).with(move_to)
+        expect(game_main.board).not_to receive(:change_tile).with(move_to, piece)
+        expect(game_main.board).not_to receive(:update_coordinate).with(move_to)
+        expect(game_main.board).not_to receive(:clear_tile).with(piece)
+        game_main.move_piece(piece, move)
+      end
+    end
+
+    context 'when not #tile_occupied? and pawn is en passant' do
+      it 'calls all appropriate methods' do
+        piece = [0, 0]
+        move = 'Kb7'
+        move_to = [1, 1]
+        expect(game_main).to receive(:translate_move).with('b7').and_return(move_to)
+        expect(game_main.board).to receive(:tile_occupied?).with(move_to).and_return(false)
+        expect(game_main).not_to receive(:can_capture?).with(piece, move)
+        expect(game_main).to receive(:en_passant?).exactly(3).times.with(piece).and_return(['left', true, [0, 0]])
+        expect(game_main.board).to receive(:clear_tile)
+        expect(game_main).to receive(:pawn_first_move?).with(piece, move_to)
+        expect(game_main).to receive(:prevent_king_check?).with(move_to).and_return(false)
+        expect(game_main.board).to receive(:change_tile).with(move_to, piece)
+        expect(game_main.board).to receive(:update_coordinate).with(move_to)
+        expect(game_main.board).to receive(:clear_tile).with(piece)
+        game_main.move_piece(piece, move)
+      end
+    end
+
+    context 'when not #tile_occupied? and not #en_passant?' do
+      it 'calls all appropriate methods' do
+        piece = [0, 0]
+        move = 'Kb7'
+        move_to = [1, 1]
+        expect(game_main).to receive(:translate_move).with('b7').and_return(move_to)
+        expect(game_main.board).to receive(:tile_occupied?).with(move_to).and_return(false)
+        expect(game_main).not_to receive(:can_capture?).with(piece, move)
+        expect(game_main).to receive(:en_passant?).with(piece).and_return(nil)
+        expect(game_main).not_to receive(:en_passant?).with(piece)
+        expect(game_main).to receive(:pawn_first_move?).with(piece, move_to)
+        expect(game_main).to receive(:prevent_king_check?).with(move_to).and_return(false)
+        expect(game_main.board).to receive(:change_tile).with(move_to, piece)
+        expect(game_main.board).to receive(:update_coordinate).with(move_to)
+        expect(game_main.board).to receive(:clear_tile).with(piece)
+        game_main.move_piece(piece, move)
+      end
+    end
+
+    context 'when symbol is K and #prevent_king_check?' do
+      it 'calls all appropriate methods' do
+        piece = [0, 0]
+        move = 'Kb7'
+        move_to = [1, 1]
+        expect(game_main).to receive(:translate_move).with('b7').and_return(move_to)
+        expect(game_main.board).to receive(:tile_occupied?).with(move_to).and_return(false)
+        expect(game_main).to receive(:en_passant?).with(piece).and_return(nil)
+        expect(game_main).to receive(:pawn_first_move?).with(piece, move_to)
+        expect(game_main).to receive(:prevent_king_check?).with(move_to).and_return(true)
+        expect(game_main.board).not_to receive(:change_tile).with(move_to, piece)
+        expect(game_main.board).not_to receive(:update_coordinate).with(move_to)
+        expect(game_main.board).not_to receive(:clear_tile).with(piece)
+        result = game_main.move_piece(piece, move)
+        expect(result).to be nil
       end
     end
   end
@@ -1445,7 +1532,7 @@ describe Game do
         pieces = [[0, 0]]
         tile = pieces[0]
         prevent = false
-        move_to = []
+        move_to = nil
         expect(game_main).to receive(:collect_pieces).and_return(pieces)
         expect(game_main).to receive(:convert_piece_to_symbol).with('king').and_return('K')
         expect(game_main.board.board_array[0][0]).to receive(:piece_moves).with('K', tile)
@@ -1459,14 +1546,15 @@ describe Game do
       let(:player) { { name: 'test', color: 'white' } }
       subject(:game_main) { described_class.new(board, player) }
 
-      it 'calls #collect_pieces, #convert_piece_to_symbol, & #pawn_moves' do
+      it 'calls #collect_pieces, #convert_piece_to_symbol, #pawn_moves, & #add_moves' do
         pieces = [[0, 0]]
         tile = pieces[0]
         prevent = false
-        move_to = []
+        move_to = nil
         expect(game_main).to receive(:collect_pieces).and_return(pieces)
         expect(game_main).to receive(:convert_piece_to_symbol).with('pawn').and_return(nil)
         expect(game_main.board.board_array[0][0]).to receive(:pawn_moves).with(tile, 'white', true, ['', false])
+        expect(game_main).to receive(:add_moves)
         game_main.check?(prevent, move_to)
       end
     end
@@ -1486,8 +1574,69 @@ describe Game do
   end
 
   describe '#checkmate?' do
-    context '' do
-      xit '' do
+    array = [[' ', ' ', ' ', Piece.new('king', 'white', [0, 3]), 'x', ' ', ' ', ' '],
+             [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '], [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+             [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '], [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+             [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '], [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+             [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ']]
+    let(:board) { Board.new(array) }
+    let(:player) { { name: 'test', color: 'white' } }
+    subject(:game_main) { described_class.new(board, player) }
+
+    context 'when #check? is false' do
+      it 'returns nil' do
+        expect(game_main).to receive(:check?).with(false, nil).and_return(false)
+        result = game_main.checkmate?
+        expect(result).to be nil
+      end
+    end
+
+    context 'when #check? is true and move is added via first if' do
+      it 'returns nil when moves array is not empty ' do
+        king_tile = [0, 3]
+        possible_moves = [[0, 2]]
+        move = possible_moves[0]
+        expect(game_main).to receive(:check?).with(false, nil).and_return(true)
+        expect(game_main).to receive(:find_king).and_return(king_tile)
+        expect(game_main.board.board_array[king_tile[0]][king_tile[1]]).to receive(:piece_moves).with('K', king_tile)
+                                                                       .and_return(possible_moves)
+        expect(game_main).to receive(:check?).with(true, move).and_return(false)
+        result = game_main.checkmate?
+        expect(result).to be nil
+      end
+    end
+
+    context 'when #check? is true and move is added via else if' do
+      it 'returns nil when moves array is not empty ' do
+        king_tile = [0, 3]
+        possible_moves = [[0, 4]]
+        move = possible_moves[0]
+        expect(game_main).to receive(:check?).with(false, nil).and_return(true)
+        expect(game_main).to receive(:find_king).and_return(king_tile)
+        expect(game_main.board.board_array[king_tile[0]][king_tile[1]]).to receive(:piece_moves).with('K', king_tile)
+                                                                       .and_return(possible_moves)
+        expect(game_main.board).to receive(:tile_occupied?).with(move).and_return(true)
+        expect(game_main).to receive(:convert_coord_to_move).with('K', move).and_return('e8')
+        expect(game_main).to receive(:can_capture?).with(king_tile, 'e8', true).and_return(true)
+        result = game_main.checkmate?
+        expect(result).to be nil
+      end
+    end
+
+    context 'when #check? is true and move is not added' do
+      it 'returns true when moves array is empty ' do
+        king_tile = [0, 3]
+        possible_moves = [[0, 4]]
+        move = possible_moves[0]
+        expect(game_main).to receive(:check?).with(false, nil).and_return(true)
+        expect(game_main).to receive(:find_king).and_return(king_tile)
+        expect(game_main.board.board_array[king_tile[0]][king_tile[1]]).to receive(:piece_moves).with('K', king_tile)
+                                                                       .and_return(possible_moves)
+        expect(game_main.board).to receive(:tile_occupied?).with(move).and_return(true)
+        expect(game_main).to receive(:convert_coord_to_move).with('K', move).and_return('e8')
+        expect(game_main).to receive(:can_capture?).with(king_tile, 'e8', true).and_return(false)
+        result = game_main.checkmate?
+        expect(result).to be true
       end
     end
   end
@@ -1620,22 +1769,10 @@ describe Game do
   end
 
   describe '#player_turn' do
-    context '' do
-      xit '' do
-      end
-    end
+    # method only calls methods / updates instance variable - tested via gameplay
   end
 
   describe '#run_game' do
-    # test the until game_over loop
-    context 'when the game is over' do
-      xit 'ends the game loop' do
-        expect(game_main).to receive(:make_guess).once
-        game_main.run_game
-        game_main.instance_variable_set(:@game_over, true)
-        expect(game_main).to receive().once
-        game_main.run_game
-      end
-    end
+    # method only calls methods - tested via gameplay
   end
 end
