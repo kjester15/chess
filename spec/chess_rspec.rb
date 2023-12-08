@@ -446,6 +446,19 @@ describe Piece do
       expect(piece_main.has_moved).to be true
     end
   end
+
+  describe '#update_check' do
+    it 'updates @check to true' do
+      piece_main.update_check(true)
+      expect(piece_main.check).to be true
+    end
+
+    it 'updates @check to false' do
+      piece_main.instance_variable_set(:@check, true)
+      piece_main.update_check(false)
+      expect(piece_main.has_moved).to be false
+    end
+  end
 end
 
 describe Game do
@@ -1548,7 +1561,7 @@ describe Game do
       let(:player) { { name: 'test', color: 'white' } }
       subject(:game_main) { described_class.new(board, player) }
 
-      it 'calls #collect_pieces, #convert_piece_to_symbol, #piece_moves, & #add_moves' do
+      it 'calls appropriate methods' do
         pieces = [[0, 0]]
         tile = pieces[0]
         prevent = false
@@ -1566,15 +1579,32 @@ describe Game do
       let(:player) { { name: 'test', color: 'white' } }
       subject(:game_main) { described_class.new(board, player) }
 
-      it 'calls #collect_pieces, #convert_piece_to_symbol, #pawn_moves, & #add_moves' do
+      it 'call appropriate methods when moves array is nil' do
         pieces = [[0, 0]]
         tile = pieces[0]
         prevent = false
         move_to = nil
+        expect(game_main).to receive(:find_king).and_return([1, 1])
+        expect(game_main).to receive(:collect_pieces).and_return(pieces)
+        expect(game_main).to receive(:convert_piece_to_symbol).with('pawn').and_return(nil)
+        expect(game_main.board.board_array[0][0]).to receive(:pawn_moves).with(tile, 'white', true, ['', false])
+        expect(game_main).to receive(:add_moves).and_return([])
+        expect(game_main.board.board_array[1][1]).to receive(:update_check).with(true)
+        result = game_main.check?(prevent, move_to)
+        expect(result).to be true
+      end
+
+      it 'call appropriate methods when moves array is not nil' do
+        pieces = [[0, 0]]
+        tile = pieces[0]
+        prevent = false
+        move_to = nil
+        expect(game_main).to receive(:find_king).and_return([1, 1])
         expect(game_main).to receive(:collect_pieces).and_return(pieces)
         expect(game_main).to receive(:convert_piece_to_symbol).with('pawn').and_return(nil)
         expect(game_main.board.board_array[0][0]).to receive(:pawn_moves).with(tile, 'white', true, ['', false])
         expect(game_main).to receive(:add_moves)
+        expect(game_main.board.board_array[1][1]).to receive(:update_check).with(false)
         game_main.check?(prevent, move_to)
       end
     end
@@ -1591,6 +1621,8 @@ describe Game do
         game_main.check?(prevent, move_to)
       end
     end
+
+    # board.board_array[king_tile[0]][king_tile[1]].update_check(false)
   end
 
   describe '#checkmate?' do

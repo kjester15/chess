@@ -440,20 +440,22 @@ class Game
   end
 
   def castle
-    # assign king and rook a has_moved true false variable
+    # DONE: assign piece class a has_moved true false variable
+    # TODO: add castle to possible move directions for king
+    # if 
     # if king is not in check, has_moved == false, and rook has_move == false
     #   check that the tile moving to, and tile between, are both not in check
-    #     move king to move to tile, and rook on opposite side
+    #     move king to move_to tile, and rook on opposite side
     #   else return
     # else return
 
-    # TODO
+    # How it works:
     #   1. Move king 2 tiles towards either rook
     #   2. Move rook that king moved towards on opposite side of king
     # Rules:
     #   1. King and Rook CANNOT HAVE BEEN MOVED YET
     #   2. King CANNOT BE UNDER ATTACK (in check)
-    #   3. King CANNOT CASTLE THROUGH CHECK (i.e queen can attack the square between the king and rook)
+    #   3. King CANNOT CASTLE THROUGH CHECK
   end
 
   def prevent_king_check?(move_to)
@@ -506,8 +508,10 @@ class Game
         moves = add_moves(all_moves, king_tile, symbol, tile)
       end
       unless moves.nil?
+        board.board_array[king_tile[0]][king_tile[1]].update_check(true)
         return true
       end
+      board.board_array[king_tile[0]][king_tile[1]].update_check(false)
     end
   end
 

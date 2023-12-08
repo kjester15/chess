@@ -1,5 +1,5 @@
 class Piece
-  attr_accessor :type, :color, :symbol, :coordinate, :en_passant, :en_passant_count, :has_moved
+  attr_accessor :type, :color, :symbol, :coordinate, :en_passant, :en_passant_count, :has_moved, :check
 
   def initialize(type, color, coordinate, en_passant = false, en_passant_count = '')
     @pieces = { king_black: '♔', queen_black: '♕', rook_black: '♖', bishop_black: '♗', knight_black: '♘',
@@ -12,6 +12,7 @@ class Piece
     @symbol = @pieces[:"#{type}_#{color}"]
     @coordinate = coordinate
     @has_moved = false
+    @check = false
   end
 
   def pawn_move_directions(position, color, capture, enpassant)
@@ -127,5 +128,9 @@ class Piece
 
   def update_has_moved
     @has_moved = true
+  end
+
+  def update_check(value)
+    @check = value
   end
 end
