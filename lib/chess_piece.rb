@@ -88,7 +88,13 @@ class Piece
     possible_moves = []
     case piece
     when 'K'
-      move_directions = [[1, 0], [1, 1], [0, 1], [-1, 1], [-1, 0], [-1, -1], [0, -1], [1, -1]].freeze
+      castle_directions = [[0, -2], [0, 2]]
+      move_directions = [[1, 0], [1, 1], [0, 1], [-1, 1], [-1, 0], [-1, -1], [0, -1], [1, -1]]
+      unless has_moved
+        castle_directions.each do |direction|
+          move_directions << direction
+        end
+      end
       possible_moves = king_knight_moves(position, move_directions)
     when 'N'
       move_directions = [[-2, 1], [-1, 2], [1, 2], [2, 1], [2, -1], [1, -2], [-1, -2], [-2, -1]].freeze

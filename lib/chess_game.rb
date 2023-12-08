@@ -441,13 +441,16 @@ class Game
 
   def castle
     # DONE: assign piece class a has_moved true false variable
+    # DONE: assign piece class a check true false variable
     # TODO: add castle to possible move directions for king
-    # if 
-    # if king is not in check, has_moved == false, and rook has_move == false
-    #   check that the tile moving to, and tile between, are both not in check
-    #     move king to move_to tile, and rook on opposite side
-    #   else return
-    # else return
+    # return unless king_tile !check? && king.has_moved == false && rook.has_moved == false
+    #
+    # [array of tiles: [move_to], [tile between]].each do |tile|
+    #   return if tile in check?
+    # end
+    #
+    # move_to = king
+    # opposite_side_king = rook
 
     # How it works:
     #   1. Move king 2 tiles towards either rook
@@ -480,6 +483,7 @@ class Game
   end
 
   def collect_pieces
+    # TODO: when called from #check? via #prevent_king_check? it's calling the same players pieces
     color = @current_player[:color]
     pieces = []
     8.times do |row|
@@ -507,7 +511,11 @@ class Game
         all_moves = board.board_array[tile[0]][tile[1]].pawn_moves(tile, @current_player[:color], true, ['', false])
         moves = add_moves(all_moves, king_tile, symbol, tile)
       end
+      p piece_type
+      p tile
+      p moves
       unless moves.nil?
+        # TODO: this should not call update_check when being called from #prevent_king_check
         board.board_array[king_tile[0]][king_tile[1]].update_check(true)
         return true
       end
