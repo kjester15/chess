@@ -462,7 +462,7 @@ class Game
   end
 
   def prevent_king_check?(move_to)
-    return unless check?(true, move_to)
+    return unless check?(true, move_to) == true
 
     puts 'That tile is in check, you cannot move there.'
     true
@@ -482,9 +482,15 @@ class Game
     false
   end
 
-  def collect_pieces
-    # TODO: when called from #check? via #prevent_king_check? it's calling the same players pieces
+  def collect_pieces(value)
     color = @current_player[:color]
+    if value
+      if @current_player[:color] == 'white'
+        color = 'black'
+      else
+        color = 'white'
+      end
+    end
     pieces = []
     8.times do |row|
       8.times do |column|
@@ -500,7 +506,7 @@ class Game
 
   def check?(prevent, move_to)
     king_tile = prevent ? move_to : find_king
-    pieces = collect_pieces
+    pieces = collect_pieces(prevent)
     pieces.each do |tile|
       piece_type = board.board_array[tile[0]][tile[1]].type
       symbol = convert_piece_to_symbol(piece_type)
@@ -511,15 +517,11 @@ class Game
         all_moves = board.board_array[tile[0]][tile[1]].pawn_moves(tile, @current_player[:color], true, ['', false])
         moves = add_moves(all_moves, king_tile, symbol, tile)
       end
-      p piece_type
-      p tile
-      p moves
       unless moves.nil?
-        # TODO: this should not call update_check when being called from #prevent_king_check
-        board.board_array[king_tile[0]][king_tile[1]].update_check(true)
+        unless prevent then board.board_array[king_tile[0]][king_tile[1]].update_check(true) end
         return true
       end
-      board.board_array[king_tile[0]][king_tile[1]].update_check(false)
+      unless prevent then board.board_array[king_tile[0]][king_tile[1]].update_check(false) end
     end
   end
 
