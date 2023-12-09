@@ -482,15 +482,16 @@ class Game
     false
   end
 
-  def collect_pieces(value)
-    color = @current_player[:color]
-    if value
-      if @current_player[:color] == 'white'
-        color = 'black'
-      else
-        color = 'white'
-      end
+  def swap_color
+    if @current_player[:color] == 'white'
+      'black'
+    else
+      'white'
     end
+  end
+
+  def collect_pieces(value)
+    color = value ? swap_color : @current_player[:color]
     pieces = []
     8.times do |row|
       8.times do |column|

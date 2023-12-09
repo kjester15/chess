@@ -1513,44 +1513,120 @@ describe Game do
     end
   end
 
-  describe '#collect_pieces' do
-    context 'when current player is white' do
-      array = [[' ', ' ', ' ', Piece.new('king', 'white', [0, 3]), ' ', ' ', ' ', ' '],
-               [' ', ' ', ' ', Piece.new('king', 'black', [1, 3]), ' ', ' ', ' ', ' '],
-               [' ', ' ', ' ', Piece.new('king', 'white', [2, 3]), ' ', ' ', ' ', ' '],
-               [' ', ' ', ' ', Piece.new('king', 'black', [3, 3]), ' ', ' ', ' ', ' '],
-               [' ', ' ', ' ', Piece.new('king', 'white', [4, 3]), ' ', ' ', ' ', ' '],
-               [' ', ' ', ' ', Piece.new('king', 'black', [5, 3]), ' ', ' ', ' ', ' '],
-               [' ', ' ', ' ', Piece.new('king', 'white', [6, 3]), ' ', ' ', ' ', ' '],
-               [' ', ' ', ' ', Piece.new('king', 'black', [7, 3]), ' ', ' ', ' ', ' ']]
-      let(:board) { Board.new(array) }
-      let(:player) { { name: 'test', color: 'white' } }
-      subject(:game_main) { described_class.new(board, player) }
-
-      it 'returns correct piece array' do
-        pieces = [[0, 3], [2, 3], [4, 3], [6, 3]]
-        result = game_main.collect_pieces
-        expect(result).to eq(pieces)
-      end
-    end
-
+  describe '#swap_color' do
     context 'when current player is black' do
-      array = [[' ', ' ', ' ', Piece.new('king', 'white', [0, 3]), ' ', ' ', ' ', ' '],
-               [' ', ' ', ' ', Piece.new('king', 'black', [1, 3]), ' ', ' ', ' ', ' '],
-               [' ', ' ', ' ', Piece.new('king', 'white', [2, 3]), ' ', ' ', ' ', ' '],
-               [' ', ' ', ' ', Piece.new('king', 'black', [3, 3]), ' ', ' ', ' ', ' '],
-               [' ', ' ', ' ', Piece.new('king', 'white', [4, 3]), ' ', ' ', ' ', ' '],
-               [' ', ' ', ' ', Piece.new('king', 'black', [5, 3]), ' ', ' ', ' ', ' '],
-               [' ', ' ', ' ', Piece.new('king', 'white', [6, 3]), ' ', ' ', ' ', ' '],
-               [' ', ' ', ' ', Piece.new('king', 'black', [7, 3]), ' ', ' ', ' ', ' ']]
-      let(:board) { Board.new(array) }
+      let(:board) { Board.new }
       let(:player) { { name: 'test', color: 'black' } }
       subject(:game_main) { described_class.new(board, player) }
 
-      it 'returns correct piece array' do
-        pieces = [[1, 3], [3, 3], [5, 3], [7, 3]]
-        result = game_main.collect_pieces
-        expect(result).to eq(pieces)
+      it 'returns white' do
+        color = 'white'
+        result = game_main.swap_color
+        expect(result).to eq(color)
+      end
+    end
+
+    context 'when current player is white' do
+      let(:board) { Board.new }
+      let(:player) { { name: 'test', color: 'white' } }
+      subject(:game_main) { described_class.new(board, player) }
+
+      it 'returns black' do
+        color = 'black'
+        result = game_main.swap_color
+        expect(result).to eq(color)
+      end
+    end
+  end
+
+  describe '#collect_pieces' do
+    context 'when value is false' do
+      context 'when current player is white' do
+        array = [[' ', ' ', ' ', Piece.new('king', 'white', [0, 3]), ' ', ' ', ' ', ' '],
+                 [' ', ' ', ' ', Piece.new('king', 'black', [1, 3]), ' ', ' ', ' ', ' '],
+                 [' ', ' ', ' ', Piece.new('king', 'white', [2, 3]), ' ', ' ', ' ', ' '],
+                 [' ', ' ', ' ', Piece.new('king', 'black', [3, 3]), ' ', ' ', ' ', ' '],
+                 [' ', ' ', ' ', Piece.new('king', 'white', [4, 3]), ' ', ' ', ' ', ' '],
+                 [' ', ' ', ' ', Piece.new('king', 'black', [5, 3]), ' ', ' ', ' ', ' '],
+                 [' ', ' ', ' ', Piece.new('king', 'white', [6, 3]), ' ', ' ', ' ', ' '],
+                 [' ', ' ', ' ', Piece.new('king', 'black', [7, 3]), ' ', ' ', ' ', ' ']]
+        let(:board) { Board.new(array) }
+        let(:player) { { name: 'test', color: 'white' } }
+        subject(:game_main) { described_class.new(board, player) }
+
+        it 'returns correct piece array' do
+          value = false
+          pieces = [[0, 3], [2, 3], [4, 3], [6, 3]]
+          result = game_main.collect_pieces(value)
+          expect(result).to eq(pieces)
+        end
+      end
+
+      context 'when current player is black' do
+        array = [[' ', ' ', ' ', Piece.new('king', 'white', [0, 3]), ' ', ' ', ' ', ' '],
+                 [' ', ' ', ' ', Piece.new('king', 'black', [1, 3]), ' ', ' ', ' ', ' '],
+                 [' ', ' ', ' ', Piece.new('king', 'white', [2, 3]), ' ', ' ', ' ', ' '],
+                 [' ', ' ', ' ', Piece.new('king', 'black', [3, 3]), ' ', ' ', ' ', ' '],
+                 [' ', ' ', ' ', Piece.new('king', 'white', [4, 3]), ' ', ' ', ' ', ' '],
+                 [' ', ' ', ' ', Piece.new('king', 'black', [5, 3]), ' ', ' ', ' ', ' '],
+                 [' ', ' ', ' ', Piece.new('king', 'white', [6, 3]), ' ', ' ', ' ', ' '],
+                 [' ', ' ', ' ', Piece.new('king', 'black', [7, 3]), ' ', ' ', ' ', ' ']]
+        let(:board) { Board.new(array) }
+        let(:player) { { name: 'test', color: 'black' } }
+        subject(:game_main) { described_class.new(board, player) }
+
+        it 'returns correct piece array' do
+          value = false
+          pieces = [[1, 3], [3, 3], [5, 3], [7, 3]]
+          result = game_main.collect_pieces(value)
+          expect(result).to eq(pieces)
+        end
+      end
+    end
+
+    context 'when value is true' do
+      context 'when current player is white' do
+        array = [[' ', ' ', ' ', Piece.new('king', 'white', [0, 3]), ' ', ' ', ' ', ' '],
+                 [' ', ' ', ' ', Piece.new('king', 'black', [1, 3]), ' ', ' ', ' ', ' '],
+                 [' ', ' ', ' ', Piece.new('king', 'white', [2, 3]), ' ', ' ', ' ', ' '],
+                 [' ', ' ', ' ', Piece.new('king', 'black', [3, 3]), ' ', ' ', ' ', ' '],
+                 [' ', ' ', ' ', Piece.new('king', 'white', [4, 3]), ' ', ' ', ' ', ' '],
+                 [' ', ' ', ' ', Piece.new('king', 'black', [5, 3]), ' ', ' ', ' ', ' '],
+                 [' ', ' ', ' ', Piece.new('king', 'white', [6, 3]), ' ', ' ', ' ', ' '],
+                 [' ', ' ', ' ', Piece.new('king', 'black', [7, 3]), ' ', ' ', ' ', ' ']]
+        let(:board) { Board.new(array) }
+        let(:player) { { name: 'test', color: 'white' } }
+        subject(:game_main) { described_class.new(board, player) }
+
+        it 'returns correct piece array' do
+          value = true
+          pieces = [[1, 3], [3, 3], [5, 3], [7, 3]]
+          expect(game_main).to receive(:swap_color).and_return('black')
+          result = game_main.collect_pieces(value)
+          expect(result).to eq(pieces)
+        end
+      end
+
+      context 'when current player is black' do
+        array = [[' ', ' ', ' ', Piece.new('king', 'white', [0, 3]), ' ', ' ', ' ', ' '],
+                 [' ', ' ', ' ', Piece.new('king', 'black', [1, 3]), ' ', ' ', ' ', ' '],
+                 [' ', ' ', ' ', Piece.new('king', 'white', [2, 3]), ' ', ' ', ' ', ' '],
+                 [' ', ' ', ' ', Piece.new('king', 'black', [3, 3]), ' ', ' ', ' ', ' '],
+                 [' ', ' ', ' ', Piece.new('king', 'white', [4, 3]), ' ', ' ', ' ', ' '],
+                 [' ', ' ', ' ', Piece.new('king', 'black', [5, 3]), ' ', ' ', ' ', ' '],
+                 [' ', ' ', ' ', Piece.new('king', 'white', [6, 3]), ' ', ' ', ' ', ' '],
+                 [' ', ' ', ' ', Piece.new('king', 'black', [7, 3]), ' ', ' ', ' ', ' ']]
+        let(:board) { Board.new(array) }
+        let(:player) { { name: 'test', color: 'black' } }
+        subject(:game_main) { described_class.new(board, player) }
+
+        it 'returns correct piece array' do
+          value = true
+          pieces = [[0, 3], [2, 3], [4, 3], [6, 3]]
+          expect(game_main).to receive(:swap_color).and_return('white')
+          result = game_main.collect_pieces(value)
+          expect(result).to eq(pieces)
+        end
       end
     end
   end
