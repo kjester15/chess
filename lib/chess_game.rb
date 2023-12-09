@@ -205,7 +205,7 @@ class Game
   def add_moves(moves, tile, piece, coordinate)
     return unless moves.include?(tile)
 
-    return coordinate unless %w[Q R B].include?(piece)
+    return coordinate unless %w[Q R B].include?(piece) || %w[a b c d e f g h].include?(piece)
 
     return coordinate if not_obscured?(coordinate, tile)
   end
@@ -338,6 +338,13 @@ class Game
     elsif !en_passant?(piece).nil? && en_passant?(piece)[1]
       captured_pawn = en_passant?(piece)[2]
       board.clear_tile(captured_pawn)
+    elsif symbol == 'K' && castle(piece, move_to)[0] == true
+      return if prevent_king_check?(move_to)
+
+      rook_array = castle(piece, move_to)
+      board.change_tile(rook_array[2], rook_array[1])
+      board.update_coordinate(rook_array[2])
+      board.clear_tile(rook_array[1])
     end
     pawn_first_move?(piece, move_to)
     return if symbol == 'K' && prevent_king_check?(move_to)
@@ -439,26 +446,20 @@ class Game
     true
   end
 
-  def castle
-    # DONE: assign piece class a has_moved true false variable
-    # DONE: assign piece class a check true false variable
-    # TODO: add castle to possible move directions for king
-    # return unless king_tile !check? && king.has_moved == false && rook.has_moved == false
-    #
-    # [array of tiles: [move_to], [tile between]].each do |tile|
-    #   return if tile in check?
-    # end
-    #
-    # move_to = king
-    # opposite_side_king = rook
+  def castle(king_tile, move_to)
+    row = @current_player[:color] == 'white' ? 7 : 0
+    rooks = [[row, 0], [row, 7]]
+    castle_rook = (king_tile[1] - move_to[1]).positive? ? rooks[0] : rooks[1]
+    castle_direction = castle_rook == rooks[0] ? 'left' : 'right'
+    return [false] if check?(true, king_tile) == true || board.board_array[king_tile[0]][king_tile[1]].has_moved ||
+                      board.board_array[castle_rook[0]][castle_rook[1]].has_moved
 
-    # How it works:
-    #   1. Move king 2 tiles towards either rook
-    #   2. Move rook that king moved towards on opposite side of king
-    # Rules:
-    #   1. King and Rook CANNOT HAVE BEEN MOVED YET
-    #   2. King CANNOT BE UNDER ATTACK (in check)
-    #   3. King CANNOT CASTLE THROUGH CHECK
+    tile_between = castle_direction == 'left' ? [row, king_tile[1] - 1] : [row, king_tile[1] + 1]
+    return [false] if check?(true, tile_between) == true
+
+    rook_adjust = castle_direction == 'left' ? 1 : -1
+    rook_move_to = [row, move_to[1] + rook_adjust]
+    return [true, castle_rook, rook_move_to]
   end
 
   def prevent_king_check?(move_to)
@@ -656,4 +657,6 @@ class Game
     @game_over = load.game_over
     @move_complete = load.move_complete
   end
+
+  # TODO: pawn is moving 2 spaces on first move even if it's obscured
 end

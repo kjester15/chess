@@ -687,15 +687,24 @@ describe Game do
       end
     end
 
-    context 'when the moves array does include the given tile and the piece is Q/R/B, and #not_obscured? returns true' do
+    context 'when the moves array does include the given tile and the piece is Q/R/B or [a b c d e f g h], and #not_obscured? returns true' do
       before do
         allow(game_main).to receive(:not_obscured?).and_return(true)
       end
 
-      it 'returns coordinate' do
+      it 'returns coordinate when Q/R/B' do
         moves = [[1, 1], [2, 2], [3, 3]]
         tile = [2, 2]
         piece = 'Q'
+        coordinate = [4, 4]
+        result = game_main.add_moves(moves, tile, piece, coordinate)
+        expect(result).to eq(coordinate)
+      end
+
+      it 'returns coordinate when [a b c d e f g h]' do
+        moves = [[1, 1], [2, 2], [3, 3]]
+        tile = [2, 2]
+        piece = 'a'
         coordinate = [4, 4]
         result = game_main.add_moves(moves, tile, piece, coordinate)
         expect(result).to eq(coordinate)
@@ -1099,6 +1108,7 @@ describe Game do
         expect(game_main).not_to receive(:can_capture?).with(piece, move)
         expect(game_main).to receive(:en_passant?).with(piece).and_return(nil)
         expect(game_main).not_to receive(:en_passant?).with(piece)
+        expect(game_main).to receive(:castle).with(piece, move_to).and_return([false])
         expect(game_main).to receive(:pawn_first_move?).with(piece, move_to)
         expect(game_main).to receive(:prevent_king_check?).with(move_to).and_return(false)
         expect(game_main.board).to receive(:change_tile).with(move_to, piece)
@@ -1117,12 +1127,55 @@ describe Game do
         expect(game_main).to receive(:translate_move).with('b7').and_return(move_to)
         expect(game_main.board).to receive(:tile_occupied?).with(move_to).and_return(false)
         expect(game_main).to receive(:en_passant?).with(piece).and_return(nil)
+        expect(game_main).to receive(:castle).with(piece, move_to).and_return([false])
         expect(game_main).to receive(:pawn_first_move?).with(piece, move_to)
         expect(game_main).to receive(:prevent_king_check?).with(move_to).and_return(true)
         expect(game_main.board).not_to receive(:change_tile).with(move_to, piece)
         expect(game_main.board).not_to receive(:update_coordinate).with(move_to)
         expect(game_main.board).not_to receive(:clear_tile).with(piece)
         expect(game_main.board.board_array[move_to[0]][move_to[1]]).not_to receive(:update_has_moved)
+        result = game_main.move_piece(piece, move)
+        expect(result).to be nil
+      end
+    end
+
+    context 'when symbol is K and #castle is true' do
+      it 'calls all appropriate methods' do
+        piece = [0, 0]
+        move = 'Kb7'
+        move_to = [1, 1]
+        rook_array = [true, [0, 0], [0, 2]]
+        expect(game_main).to receive(:translate_move).with('b7').and_return(move_to)
+        expect(game_main.board).to receive(:tile_occupied?).with(move_to).and_return(false)
+        expect(game_main).to receive(:en_passant?).with(piece).and_return(nil)
+        expect(game_main).to receive(:castle).with(piece, move_to).and_return(rook_array)
+        expect(game_main).to receive(:prevent_king_check?).with(move_to).and_return(false)
+        expect(game_main).to receive(:castle).with(piece, move_to).and_return(rook_array)
+        expect(game_main.board).to receive(:change_tile).with(rook_array[2], rook_array[1])
+        expect(game_main.board).to receive(:update_coordinate).with(rook_array[2])
+        expect(game_main.board).to receive(:clear_tile).with(rook_array[1])
+        expect(game_main).to receive(:pawn_first_move?).with(piece, move_to)
+        expect(game_main).to receive(:prevent_king_check?).with(move_to).and_return(true)
+        expect(game_main.board).not_to receive(:change_tile).with(move_to, piece)
+        expect(game_main.board.board_array[move_to[0]][move_to[1]]).not_to receive(:update_has_moved)
+        result = game_main.move_piece(piece, move)
+        expect(result).to be nil
+      end
+    end
+
+    context 'when symbol is K and #castle is false' do
+      it 'calls all appropriate methods' do
+        piece = [0, 0]
+        move = 'Kb7'
+        move_to = [1, 1]
+        rook_array = [false]
+        expect(game_main).to receive(:translate_move).with('b7').and_return(move_to)
+        expect(game_main.board).to receive(:tile_occupied?).with(move_to).and_return(false)
+        expect(game_main).to receive(:en_passant?).with(piece).and_return(nil)
+        expect(game_main).to receive(:castle).with(piece, move_to).and_return(rook_array)
+        expect(game_main).to receive(:pawn_first_move?).with(piece, move_to)
+        expect(game_main).to receive(:prevent_king_check?).with(move_to).and_return(true)
+        expect(game_main.board).not_to receive(:change_tile).with(move_to, piece)
         result = game_main.move_piece(piece, move)
         expect(result).to be nil
       end
@@ -1432,8 +1485,135 @@ describe Game do
   end
 
   describe '#castle' do
-    context '' do
-      xit '' do
+    context 'when current player is white' do
+      rook_white = Piece.new('rook', 'white', [7, 0])
+      king_white = Piece.new('rook', 'white', [7, 4])
+      array = [[' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '], [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+               [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '], [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+               [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '], [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+               [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '], [rook_white, ' ', ' ', ' ', king_white, ' ', ' ', rook_white]]
+      let(:player) { { name: 'test', color: 'white' } }
+      let(:board) { Board.new(array) }
+      subject(:game_main) { described_class.new(board, player) }
+
+      it 'returns false when move_to is #check?' do
+        king_tile = [7, 4]
+        move_to = [7, 0]
+        expect(game_main).to receive(:check?).with(true, king_tile).and_return(true)
+        result = game_main.castle(king_tile, move_to)
+        expect(result).to eq([false])
+      end
+
+      it 'returns false when move_to is not #check?, castle direction is left and tile between is #check?' do
+        king_tile = [7, 4]
+        move_to = [7, 0]
+        tile_between = [7, 3]
+        expect(game_main).to receive(:check?).with(true, king_tile).and_return(false)
+        expect(game_main).to receive(:check?).with(true, tile_between).and_return(true)
+        result = game_main.castle(king_tile, move_to)
+        expect(result).to eq([false])
+      end
+
+      it 'returns false when move_to is not #check?, castle direction is right and tile between is #check?' do
+        king_tile = [7, 4]
+        move_to = [7, 6]
+        tile_between = [7, 5]
+        expect(game_main).to receive(:check?).with(true, king_tile).and_return(false)
+        expect(game_main).to receive(:check?).with(true, tile_between).and_return(true)
+        result = game_main.castle(king_tile, move_to)
+        expect(result).to eq([false])
+      end
+
+      it 'returns rook_array when move_to is not #check?, castle direction is left and tile between is not #check?' do
+        king_tile = [7, 4]
+        move_to = [7, 2]
+        tile_between = [7, 3]
+        castle_rook = [7, 0]
+        rook_move_to = [7, 3]
+        rook_array = [true, castle_rook, rook_move_to]
+        expect(game_main).to receive(:check?).with(true, king_tile).and_return(false)
+        expect(game_main).to receive(:check?).with(true, tile_between).and_return(false)
+        result = game_main.castle(king_tile, move_to)
+        expect(result).to eq(rook_array)
+      end
+
+      it 'returns rook_array when move_to is not #check?, castle direction is right and tile between is not #check?' do
+        king_tile = [7, 4]
+        move_to = [7, 6]
+        tile_between = [7, 5]
+        castle_rook = [7, 7]
+        rook_move_to = [7, 5]
+        rook_array = [true, castle_rook, rook_move_to]
+        expect(game_main).to receive(:check?).with(true, king_tile).and_return(false)
+        expect(game_main).to receive(:check?).with(true, tile_between).and_return(false)
+        result = game_main.castle(king_tile, move_to)
+        expect(result).to eq(rook_array)
+      end
+    end
+
+    context 'when current player is black' do
+      rook_black = Piece.new('rook', 'black', [0, 0])
+      king_black = Piece.new('rook', 'black', [0, 4])
+      array = [[rook_black, ' ', ' ', ' ', king_black, ' ', ' ', rook_black], [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+               [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '], [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+               [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '], [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+               [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '], [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ']]
+      let(:player) { { name: 'test', color: 'black' } }
+      let(:board) { Board.new(array) }
+      subject(:game_main) { described_class.new(board, player) }
+
+      it 'returns false when move_to is #check?' do
+        king_tile = [0, 4]
+        move_to = [0, 0]
+        expect(game_main).to receive(:check?).with(true, king_tile).and_return(true)
+        result = game_main.castle(king_tile, move_to)
+        expect(result).to eq([false])
+      end
+
+      it 'returns false when move_to is not #check?, castle direction is left and tile between is #check?' do
+        king_tile = [0, 4]
+        move_to = [0, 0]
+        tile_between = [0, 3]
+        expect(game_main).to receive(:check?).with(true, king_tile).and_return(false)
+        expect(game_main).to receive(:check?).with(true, tile_between).and_return(true)
+        result = game_main.castle(king_tile, move_to)
+        expect(result).to eq([false])
+      end
+
+      it 'returns false when move_to is not #check?, castle direction is right and tile between is #check?' do
+        king_tile = [0, 4]
+        move_to = [0, 6]
+        tile_between = [0, 5]
+        expect(game_main).to receive(:check?).with(true, king_tile).and_return(false)
+        expect(game_main).to receive(:check?).with(true, tile_between).and_return(true)
+        result = game_main.castle(king_tile, move_to)
+        expect(result).to eq([false])
+      end
+
+      it 'returns rook_array when move_to is not #check?, castle direction is left and tile between is not #check?' do
+        king_tile = [0, 4]
+        move_to = [0, 2]
+        tile_between = [0, 3]
+        castle_rook = [0, 0]
+        rook_move_to = [0, 3]
+        rook_array = [true, castle_rook, rook_move_to]
+        expect(game_main).to receive(:check?).with(true, king_tile).and_return(false)
+        expect(game_main).to receive(:check?).with(true, tile_between).and_return(false)
+        result = game_main.castle(king_tile, move_to)
+        expect(result).to eq(rook_array)
+      end
+
+      it 'returns rook_array when move_to is not #check?, castle direction is right and tile between is not #check?' do
+        king_tile = [0, 4]
+        move_to = [0, 6]
+        tile_between = [0, 5]
+        castle_rook = [0, 7]
+        rook_move_to = [0, 5]
+        rook_array = [true, castle_rook, rook_move_to]
+        expect(game_main).to receive(:check?).with(true, king_tile).and_return(false)
+        expect(game_main).to receive(:check?).with(true, tile_between).and_return(false)
+        result = game_main.castle(king_tile, move_to)
+        expect(result).to eq(rook_array)
       end
     end
   end
