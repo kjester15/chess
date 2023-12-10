@@ -493,6 +493,7 @@ class Game
 
   def collect_pieces(value)
     color = value ? swap_color : @current_player[:color]
+    p color
     pieces = []
     8.times do |row|
       8.times do |column|
@@ -514,17 +515,17 @@ class Game
       symbol = convert_piece_to_symbol(piece_type)
       if %w[K Q R B N].include?(symbol)
         all_moves = board.board_array[tile[0]][tile[1]].piece_moves(symbol, tile)
-        moves = add_moves(all_moves, king_tile, symbol, tile)
       else
         all_moves = board.board_array[tile[0]][tile[1]].pawn_moves(tile, @current_player[:color], true, ['', false])
-        moves = add_moves(all_moves, king_tile, symbol, tile)
       end
+      moves = add_moves(all_moves, king_tile, symbol, tile)
       unless moves.nil?
         unless prevent then board.board_array[king_tile[0]][king_tile[1]].update_check(true) end
         return true
       end
       unless prevent then board.board_array[king_tile[0]][king_tile[1]].update_check(false) end
     end
+    return nil
   end
 
   def checkmate?
@@ -534,7 +535,7 @@ class Game
     king_tile = find_king
     possible_moves = board.board_array[king_tile[0]][king_tile[1]].piece_moves('K', king_tile)
     possible_moves.each do |move|
-      if board.board_array[move[0]][move[1]] == ' ' && !check?(true, move)
+      if board.board_array[move[0]][move[1]] == ' ' && check?(true, move) != true
         moves << move
       elsif board.tile_occupied?(move) && can_capture?(king_tile, convert_coord_to_move('K', move), true)
         moves << move
@@ -657,6 +658,4 @@ class Game
     @game_over = load.game_over
     @move_complete = load.move_complete
   end
-
-  # TODO: pawn is moving 2 spaces on first move even if it's obscured
 end
