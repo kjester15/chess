@@ -451,11 +451,11 @@ class Game
     rooks = [[row, 0], [row, 7]]
     castle_rook = (king_tile[1] - move_to[1]).positive? ? rooks[0] : rooks[1]
     castle_direction = castle_rook == rooks[0] ? 'left' : 'right'
-    return [false] if check?(true, king_tile) == true || board.board_array[king_tile[0]][king_tile[1]].has_moved ||
+    return [false] if check?(true, king_tile, false) == true || board.board_array[king_tile[0]][king_tile[1]].has_moved ||
                       board.board_array[castle_rook[0]][castle_rook[1]].has_moved
 
     tile_between = castle_direction == 'left' ? [row, king_tile[1] - 1] : [row, king_tile[1] + 1]
-    return [false] if check?(true, tile_between) == true
+    return [false] if check?(true, tile_between, false) == true
 
     rook_adjust = castle_direction == 'left' ? 1 : -1
     rook_move_to = [row, move_to[1] + rook_adjust]
@@ -463,14 +463,14 @@ class Game
   end
 
   def prevent_king_check?(move_to)
-    return unless check?(true, move_to) == true
+    return unless check?(true, move_to, false) == true
 
     puts 'That tile is in check, you cannot move there.'
     true
   end
 
   def find_king
-    color = @current_player[:color] == 'white' ? 'black' : 'white'
+    color = swap_color
     8.times do |row|
       8.times do |column|
         unless board.board_array[row][column] == ' '
@@ -493,7 +493,6 @@ class Game
 
   def collect_pieces(value)
     color = value ? swap_color : @current_player[:color]
-    p color
     pieces = []
     8.times do |row|
       8.times do |column|
@@ -507,9 +506,9 @@ class Game
     pieces
   end
 
-  def check?(prevent, move_to)
+  def check?(prevent, move_to, checkmate)
     king_tile = prevent ? move_to : find_king
-    pieces = collect_pieces(prevent)
+    pieces = checkmate ? collect_pieces(false) : collect_pieces(prevent)
     pieces.each do |tile|
       piece_type = board.board_array[tile[0]][tile[1]].type
       symbol = convert_piece_to_symbol(piece_type)
@@ -529,13 +528,13 @@ class Game
   end
 
   def checkmate?
-    return unless check?(false, nil) == true
+    return unless check?(false, nil, false) == true
 
     moves = []
     king_tile = find_king
     possible_moves = board.board_array[king_tile[0]][king_tile[1]].piece_moves('K', king_tile)
     possible_moves.each do |move|
-      if board.board_array[move[0]][move[1]] == ' ' && check?(true, move) != true
+      if board.board_array[move[0]][move[1]] == ' ' && check?(true, move, true) != true
         moves << move
       elsif board.tile_occupied?(move) && can_capture?(king_tile, convert_coord_to_move('K', move), true)
         moves << move
@@ -593,16 +592,16 @@ class Game
       board.populate_board
       set_current_player
     end
-    # system 'clear'
+    system 'clear'
     until game_over
       board.print_board
       puts "#{current_player[:name]}, your turn."
       player_turn
-      # system 'clear'
+      system 'clear'
       board.print_board
       decrease_enpassant_count
       reset_en_passant
-      if check?(false, nil) == true
+      if check?(false, nil, false) == true
         if checkmate?
           puts 'Checkmate'
           @game_over = true
@@ -615,7 +614,7 @@ class Game
       puts 'If you would like to save your game, please type SAVE (the next player will resume upon load) - otherwise hit enter'
       save = gets.chomp == 'SAVE'
       if save then create_save end
-      # system 'clear'
+      system 'clear'
     end
   end
 

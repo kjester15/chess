@@ -1499,7 +1499,7 @@ describe Game do
       it 'returns false when move_to is #check?' do
         king_tile = [7, 4]
         move_to = [7, 0]
-        expect(game_main).to receive(:check?).with(true, king_tile).and_return(true)
+        expect(game_main).to receive(:check?).with(true, king_tile, false).and_return(true)
         result = game_main.castle(king_tile, move_to)
         expect(result).to eq([false])
       end
@@ -1508,8 +1508,8 @@ describe Game do
         king_tile = [7, 4]
         move_to = [7, 0]
         tile_between = [7, 3]
-        expect(game_main).to receive(:check?).with(true, king_tile).and_return(false)
-        expect(game_main).to receive(:check?).with(true, tile_between).and_return(true)
+        expect(game_main).to receive(:check?).with(true, king_tile, false).and_return(false)
+        expect(game_main).to receive(:check?).with(true, tile_between, false).and_return(true)
         result = game_main.castle(king_tile, move_to)
         expect(result).to eq([false])
       end
@@ -1518,8 +1518,8 @@ describe Game do
         king_tile = [7, 4]
         move_to = [7, 6]
         tile_between = [7, 5]
-        expect(game_main).to receive(:check?).with(true, king_tile).and_return(false)
-        expect(game_main).to receive(:check?).with(true, tile_between).and_return(true)
+        expect(game_main).to receive(:check?).with(true, king_tile, false).and_return(false)
+        expect(game_main).to receive(:check?).with(true, tile_between, false).and_return(true)
         result = game_main.castle(king_tile, move_to)
         expect(result).to eq([false])
       end
@@ -1531,8 +1531,8 @@ describe Game do
         castle_rook = [7, 0]
         rook_move_to = [7, 3]
         rook_array = [true, castle_rook, rook_move_to]
-        expect(game_main).to receive(:check?).with(true, king_tile).and_return(false)
-        expect(game_main).to receive(:check?).with(true, tile_between).and_return(false)
+        expect(game_main).to receive(:check?).with(true, king_tile, false).and_return(false)
+        expect(game_main).to receive(:check?).with(true, tile_between, false).and_return(false)
         result = game_main.castle(king_tile, move_to)
         expect(result).to eq(rook_array)
       end
@@ -1544,8 +1544,8 @@ describe Game do
         castle_rook = [7, 7]
         rook_move_to = [7, 5]
         rook_array = [true, castle_rook, rook_move_to]
-        expect(game_main).to receive(:check?).with(true, king_tile).and_return(false)
-        expect(game_main).to receive(:check?).with(true, tile_between).and_return(false)
+        expect(game_main).to receive(:check?).with(true, king_tile, false).and_return(false)
+        expect(game_main).to receive(:check?).with(true, tile_between, false).and_return(false)
         result = game_main.castle(king_tile, move_to)
         expect(result).to eq(rook_array)
       end
@@ -1565,7 +1565,7 @@ describe Game do
       it 'returns false when move_to is #check?' do
         king_tile = [0, 4]
         move_to = [0, 0]
-        expect(game_main).to receive(:check?).with(true, king_tile).and_return(true)
+        expect(game_main).to receive(:check?).with(true, king_tile, false).and_return(true)
         result = game_main.castle(king_tile, move_to)
         expect(result).to eq([false])
       end
@@ -1574,8 +1574,8 @@ describe Game do
         king_tile = [0, 4]
         move_to = [0, 0]
         tile_between = [0, 3]
-        expect(game_main).to receive(:check?).with(true, king_tile).and_return(false)
-        expect(game_main).to receive(:check?).with(true, tile_between).and_return(true)
+        expect(game_main).to receive(:check?).with(true, king_tile, false).and_return(false)
+        expect(game_main).to receive(:check?).with(true, tile_between, false).and_return(true)
         result = game_main.castle(king_tile, move_to)
         expect(result).to eq([false])
       end
@@ -1584,8 +1584,8 @@ describe Game do
         king_tile = [0, 4]
         move_to = [0, 6]
         tile_between = [0, 5]
-        expect(game_main).to receive(:check?).with(true, king_tile).and_return(false)
-        expect(game_main).to receive(:check?).with(true, tile_between).and_return(true)
+        expect(game_main).to receive(:check?).with(true, king_tile, false).and_return(false)
+        expect(game_main).to receive(:check?).with(true, tile_between, false).and_return(true)
         result = game_main.castle(king_tile, move_to)
         expect(result).to eq([false])
       end
@@ -1597,8 +1597,8 @@ describe Game do
         castle_rook = [0, 0]
         rook_move_to = [0, 3]
         rook_array = [true, castle_rook, rook_move_to]
-        expect(game_main).to receive(:check?).with(true, king_tile).and_return(false)
-        expect(game_main).to receive(:check?).with(true, tile_between).and_return(false)
+        expect(game_main).to receive(:check?).with(true, king_tile, false).and_return(false)
+        expect(game_main).to receive(:check?).with(true, tile_between, false).and_return(false)
         result = game_main.castle(king_tile, move_to)
         expect(result).to eq(rook_array)
       end
@@ -1610,8 +1610,8 @@ describe Game do
         castle_rook = [0, 7]
         rook_move_to = [0, 5]
         rook_array = [true, castle_rook, rook_move_to]
-        expect(game_main).to receive(:check?).with(true, king_tile).and_return(false)
-        expect(game_main).to receive(:check?).with(true, tile_between).and_return(false)
+        expect(game_main).to receive(:check?).with(true, king_tile, false).and_return(false)
+        expect(game_main).to receive(:check?).with(true, tile_between, false).and_return(false)
         result = game_main.castle(king_tile, move_to)
         expect(result).to eq(rook_array)
       end
@@ -1822,11 +1822,12 @@ describe Game do
         tile = pieces[0]
         prevent = false
         move_to = nil
+        checkmate = false
         expect(game_main).to receive(:collect_pieces).and_return(pieces)
         expect(game_main).to receive(:convert_piece_to_symbol).with('king').and_return('K')
         expect(game_main.board.board_array[0][0]).to receive(:piece_moves).with('K', tile)
         expect(game_main).to receive(:add_moves)
-        game_main.check?(prevent, move_to)
+        game_main.check?(prevent, move_to, checkmate)
       end
     end
 
@@ -1840,13 +1841,14 @@ describe Game do
         tile = pieces[0]
         prevent = false
         move_to = nil
+        checkmate = false
         expect(game_main).to receive(:find_king).and_return([1, 1])
         expect(game_main).to receive(:collect_pieces).and_return(pieces)
         expect(game_main).to receive(:convert_piece_to_symbol).with('pawn').and_return(nil)
         expect(game_main.board.board_array[0][0]).to receive(:pawn_moves).with(tile, 'white', true, ['', false])
         expect(game_main).to receive(:add_moves).and_return([])
         expect(game_main.board.board_array[1][1]).to receive(:update_check).with(true)
-        result = game_main.check?(prevent, move_to)
+        result = game_main.check?(prevent, move_to, checkmate)
         expect(result).to be true
       end
 
@@ -1855,13 +1857,14 @@ describe Game do
         tile = pieces[0]
         prevent = false
         move_to = nil
+        checkmate = false
         expect(game_main).to receive(:find_king).and_return([1, 1])
         expect(game_main).to receive(:collect_pieces).and_return(pieces)
         expect(game_main).to receive(:convert_piece_to_symbol).with('pawn').and_return(nil)
         expect(game_main.board.board_array[0][0]).to receive(:pawn_moves).with(tile, 'white', true, ['', false])
         expect(game_main).to receive(:add_moves)
         expect(game_main.board.board_array[1][1]).to receive(:update_check).with(false)
-        game_main.check?(prevent, move_to)
+        game_main.check?(prevent, move_to, checkmate)
       end
     end
 
@@ -1873,12 +1876,11 @@ describe Game do
       it 'does not call #find_king' do
         prevent = true
         move_to = [2, 2]
+        checkmate = false
         expect(game_main).not_to receive(:find_king)
-        game_main.check?(prevent, move_to)
+        game_main.check?(prevent, move_to, checkmate)
       end
     end
-
-    # board.board_array[king_tile[0]][king_tile[1]].update_check(false)
   end
 
   describe '#checkmate?' do
@@ -1893,7 +1895,7 @@ describe Game do
 
     context 'when #check? is false' do
       it 'returns nil' do
-        expect(game_main).to receive(:check?).with(false, nil).and_return(false)
+        expect(game_main).to receive(:check?).with(false, nil, false).and_return(false)
         result = game_main.checkmate?
         expect(result).to be nil
       end
@@ -1904,11 +1906,11 @@ describe Game do
         king_tile = [0, 3]
         possible_moves = [[0, 2]]
         move = possible_moves[0]
-        expect(game_main).to receive(:check?).with(false, nil).and_return(true)
+        expect(game_main).to receive(:check?).with(false, nil, false).and_return(true)
         expect(game_main).to receive(:find_king).and_return(king_tile)
         expect(game_main.board.board_array[king_tile[0]][king_tile[1]]).to receive(:piece_moves).with('K', king_tile)
                                                                        .and_return(possible_moves)
-        expect(game_main).to receive(:check?).with(true, move).and_return(false)
+        expect(game_main).to receive(:check?).with(true, move, true).and_return(false)
         result = game_main.checkmate?
         expect(result).to be nil
       end
@@ -1919,7 +1921,7 @@ describe Game do
         king_tile = [0, 3]
         possible_moves = [[0, 4]]
         move = possible_moves[0]
-        expect(game_main).to receive(:check?).with(false, nil).and_return(true)
+        expect(game_main).to receive(:check?).with(false, nil, false).and_return(true)
         expect(game_main).to receive(:find_king).and_return(king_tile)
         expect(game_main.board.board_array[king_tile[0]][king_tile[1]]).to receive(:piece_moves).with('K', king_tile)
                                                                        .and_return(possible_moves)
@@ -1936,7 +1938,7 @@ describe Game do
         king_tile = [0, 3]
         possible_moves = [[0, 4]]
         move = possible_moves[0]
-        expect(game_main).to receive(:check?).with(false, nil).and_return(true)
+        expect(game_main).to receive(:check?).with(false, nil, false).and_return(true)
         expect(game_main).to receive(:find_king).and_return(king_tile)
         expect(game_main.board.board_array[king_tile[0]][king_tile[1]]).to receive(:piece_moves).with('K', king_tile)
                                                                        .and_return(possible_moves)
